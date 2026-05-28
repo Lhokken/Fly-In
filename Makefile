@@ -5,25 +5,15 @@
 UV      = uv
 PYTHON  = .venv/bin/python
 
-export UV_CACHE_DIR=/sgoinfre/gcerrete/.cache/uv
 
 all: install
 
 install:
 	$(UV) sync
-	$(UV) pip install transformers outlines torch
+	$(UV) pip install 
 
 run:
-	$(UV) run python main.py --definition src/functions_definition.json --calling src/function_calling_tests.json
-
-run2:
-	$(UV) run python main.py --definition src/f2unctions_definition.json --calling src/f2unction_calling_tests.json
-
-pub_grade:
-	cd moulinette && python3 -m moulinette grade_student_answers --set public ../src/results.json
-
-priv_grade:
-	cd moulinette && python3 -m moulinette grade_student_answers --set private ../src/results.json
+	$(UV) run python main.py
 
 debug:
 	$(UV) run python -m pdb main.py config.txt
