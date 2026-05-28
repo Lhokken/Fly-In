@@ -34,6 +34,28 @@ def drone_build(drone_number):
     return drone_list
 
 
+def connection_build(connections):
+    connect_list = []
+    for elem in connections:
+        connection = connection_factory()
+        connection.name1 = elem[0]
+        print(elem)
+        if "[" in elem[1]:
+            parse = elem[1].split()
+            print("<>", parse)
+            connection.name2 = parse[0]
+            connection.max_link_capacity = (parse[1].split("=")[1]).strip("]")
+        else:
+            connection.name2 = elem[1]
+        print("name1", connection.name1)
+        print("name2", connection.name2)
+        print("max", connection.max_link_capacity)
+
+        connect_list.append(connection)
+    return connect_list
+
+
+
 def main():
     skypath = sky()
     # zone = zone_factory()
@@ -44,7 +66,7 @@ def main():
     hubs = sky_1["hubs"]
     zones = zone_build(hubs)
     connections = sky_1["connections"]
-    
+    connect = connection_build(connections)
 
     skypath.sky_build(zones, drone_list, connections)
 

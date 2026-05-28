@@ -2,7 +2,6 @@
 
 from pydantic import BaseModel, ValidationError
 import pygame
-# from sky import sky
 
 
 class zone_factory():
@@ -35,11 +34,6 @@ class connection_factory():
         self.xy2 = ()
         self.max_link_capacity = 1
 
-    # def connection_build(self, connections):
-    #     for conn in connections:
-
-
-
 
 class drone_factory():
     def __init__(
@@ -57,16 +51,6 @@ class drone_factory():
         self.id_rend = self.id_txt.render(
                     str(self.drone_id), True, "white"
                     )
-
-
-
-def drone_build(drone_number):
-    drone_list = []
-    for i in range(0, drone_number):
-        drone = drone_factory(i, [80, 80])
-        drone.drone_id = i
-        drone_list.append(drone)
-    return drone_list
 
 
 def parse_input(input_file: str):

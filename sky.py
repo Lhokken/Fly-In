@@ -36,13 +36,13 @@ class sky():
         text = pygame.font.SysFont("Impact", 24)
         screen.fill(self.screen_color)
         for zone in zone_list:
-            print(zone.name)
+            # print(zone.name)
             txt_pos = (zone.xy[0], zone.xy[1])
             id_text = text.render(zone.name.capitalize(), True, self.txt_color)
             pygame.draw.circle(screen, zone.color, txt_pos, zone.radius)
             screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 50))
-        for conn in connections:
-            print(conn)
+        # for conn in connections:
+            # print(conn)
             # for zone in zone_list:
             #     if conn.name1 == zone.name:
             #         conn.xy1 = zone.xy
@@ -70,7 +70,7 @@ class sky():
         screen = pygame.display.set_mode((self.width, self.height))
         clock = self.clock
         dt = 0
-        print(connections)
+        # print(connections)
         running = True
         start = [50, 50]
         target = [400, 1700]
