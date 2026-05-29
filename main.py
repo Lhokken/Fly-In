@@ -50,7 +50,6 @@ def connection_build(connections):
         print("name1", connection.name1)
         print("name2", connection.name2)
         print("max", connection.max_link_capacity)
-
         connect_list.append(connection)
     return connect_list
 
@@ -58,15 +57,13 @@ def connection_build(connections):
 
 def main():
     skypath = sky()
-    # zone = zone_factory()
-    connection = connection_factory()
     sky_1 = parse_input("maps/medium/01_dead_end_trap.txt")
     drone_list = drone_build(sky_1["drones"])
 
     hubs = sky_1["hubs"]
     zones = zone_build(hubs)
     connections = sky_1["connections"]
-    connect = connection_build(connections)
+    connect_list = connection_build(connections)
 
     skypath.sky_build(zones, drone_list, connections)
 
