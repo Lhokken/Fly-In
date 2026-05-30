@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
+from typing import Any
+from fly_in import drone_factory
 import pygame
+
 
 class sky():
     def __init__(
             self,
-            height=900,
-            widht=1900,
-            txt_color="White",
-            screen_color=(0, 180, 180),
+            height: int = 900,
+            widht: int = 1900,
+            txt_color: str = "White",
+            screen_color: tuple[int, int, int] = (0, 180, 180),
             ) -> None:
         pygame.init()
         pygame.font.init()
@@ -20,7 +23,7 @@ class sky():
         self.id_txt = pygame.font.SysFont("Impact", 18)
         self.clock = pygame.time.Clock()
 
-    def sky_zone_set(self, zone_list):
+    def sky_zone_set(self, zone_list: list[Any]) -> None:
         x_max = 0
         y_max = 0
         x_min = 0
@@ -38,10 +41,17 @@ class sky():
         x_min = abs(x_min)
         y_min = abs(y_min)
         for zone in zone_list:
-            zone.xy[0] = int(self.width / (x_max + 2 + x_min)) * (int(zone.xy[0]) + 1 + x_min)
-            zone.xy[1] = int(self.height / (y_max + 2 + y_min)) * (int(zone.xy[1]) + 1 + y_min)
+            zone.xy[0] = int(self.width / (x_max + 2 + x_min)) * \
+                (int(zone.xy[0]) + 1 + x_min)
+            zone.xy[1] = int(self.height / (y_max + 2 + y_min)) * \
+                (int(zone.xy[1]) + 1 + y_min)
 
-    def sky_draw_graph(self, zone_list, screen, connections):
+    def sky_draw_graph(
+            self,
+            zone_list: list[Any],
+            screen: pygame.surface.Surface,
+            connections: list[Any]
+            ) -> None:
         screen.fill(self.screen_color)
         for conn in connections:
             for zone in zone_list:
@@ -51,10 +61,12 @@ class sky():
                     conn.xy2 = zone.xy
             txt_pos = (conn.xy1, conn.xy2)
             text = pygame.font.SysFont("Impact", 22)
-            id_text = text.render(str(conn.max_link_capacity), True, self.txt_color)
+            id_text = text.render(
+                str(conn.max_link_capacity), True, self.txt_color
+                )
             pygame.draw.line(screen, "black", conn.xy1, conn.xy2, width=6)
-            a = (conn.xy1[0] + conn.xy2[0]) / 2
-            b = (conn.xy1[1] + conn.xy2[1]) / 2
+            a = -3 + (conn.xy1[0] + conn.xy2[0]) / 2
+            b = -6 + (conn.xy1[1] + conn.xy2[1]) / 2
             screen.blit(id_text, (a, b))
         for zone in zone_list:
             text = pygame.font.SysFont("Impact", 16)
@@ -64,7 +76,6 @@ class sky():
             screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 50))
             id_text = text.render(zone.max_drones, True, "black")
             screen.blit(id_text, (zone.xy[0] - 5, zone.xy[1] - 5))
-            print(zone.priority)
             if zone.priority == "priority":
                 id_text = text.render("P", True, "black")
                 screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 5))
@@ -72,27 +83,43 @@ class sky():
                 id_text = text.render("X", True, "black")
                 screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 5))
 
-
-    def drone_fly(self, a: list, b: list, drone, screen, dt):
+    def drone_fly(
+            self,
+            a: list[int],
+            b: list[int],
+            drone: drone_factory,
+            screen: pygame.surface.Surface,
+            dt: float
+            ) -> list[int]:
         start = pygame.Vector2(a[0], a[1])
         target = pygame.Vector2(b[0], b[0])
         direction = target - start
         txt_pos = (start.x - 4, start.y - 6)
-        pygame.draw.circle(screen, drone.drone_color, start, drone.drone_radius)
+        pygame.draw.circle(
+            screen,
+            drone.drone_color,
+            start,
+            drone.drone_radius
+            )
         screen.blit(drone.id_rend, txt_pos)
         direction = target - start
         if direction.length() > 5:
             direction = direction.normalize()
-            start += direction * 300 * dt
+            start = pygame.Vector2(start + direction * 300 * dt)
         pygame.display.flip()
         return [int(start[0]), int(start[1])]
 
-    def sky_build(self, zone_list, drone_list, connections):
+    def sky_build(
+            self,
+            zone_list: list[Any],
+            drone_list: list[Any],
+            connections: list[Any]
+            ) -> None:
         pygame.init()
         pygame.font.init()
         screen = pygame.display.set_mode((self.width, self.height))
         clock = self.clock
-        dt = 0
+        dt: float = 0
         running = True
         start = [50, 50]
         target = [400, 1700]
@@ -104,8 +131,8 @@ class sky():
                     running = False
             keys = pygame.key.get_pressed()
             if keys[pygame.K_p]:
-                break       
+                break
             self.sky_draw_graph(zone_list, screen, connections)
             start = self.drone_fly(start, target, drone, screen, dt)
-            dt = clock.tick(60) / 1000
+            dt = (clock.tick(60) / 1000)
             pygame.display.flip()

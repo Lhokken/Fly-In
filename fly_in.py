@@ -1,31 +1,30 @@
 #!/usr/bin/env python3
 
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
+from typing import Any
 import pygame
 
 
 class zone_factory():
     def __init__(
             self,
-            name: str="",
-            start_hub: str="",
-            end_hub: str="",
-            type: str="",
-            radius: int=20,
-            max_drones: int=1,
-            next: list=[tuple],
-            priority: str=""
+            name: str = "",
+            start_hub: str = "",
+            end_hub: str = "",
+            type: str = "",
+            radius: int = 20,
+            max_drones: int = 1,
+            priority: str = ""
             ) -> None:
-        self.name = name
-        self.xy: list=[0, 0]
-        self.start_hub = start_hub
-        self.end_hub = end_hub
-        self.type = type
-        self.color = "black"
-        self.radius = radius
-        self.max_drones = max_drones
-        self.next = next
-        self.priority = priority
+        self.name: str = name
+        self.xy: list[int]
+        self.start_hub: str = start_hub
+        self.end_hub: str = end_hub
+        self.type: str = type
+        self.color: str = "black"
+        self.radius: int = radius
+        self.max_drones: int = max_drones
+        self.priority: str = priority
 
 
 class connection_factory():
@@ -40,10 +39,10 @@ class connection_factory():
 class drone_factory():
     def __init__(
             self,
-            drone_id,
-            start,
-            drone_color="brown",
-            drone_radius=15
+            drone_id: int,
+            start: list[int],
+            drone_color: str = "brown",
+            drone_radius: int = 15
             ) -> None:
         self.drone_id = drone_id
         self.start = start
@@ -55,12 +54,10 @@ class drone_factory():
                     )
 
 
-def parse_input(input_file: str):
+def parse_input(input_file: str) -> dict[str, Any]:
     nb_drones = 0
     hubs = {}
     connections = []
-    tipo = ""
-    parts = ""
     metadata = {}
     with open(input_file, "r", encoding="utf-8") as file:
         for line in file:
@@ -70,17 +67,18 @@ def parse_input(input_file: str):
             if line.startswith("nb_drones:"):
                 nb_drones = int(line.split(":")[1].strip())
             elif line.startswith(("start_hub:", "hub:", "end_hub:")):
-                tipo, parts = line.split(":", 1)
-                cut = parts[parts.find("["):parts.find("]")].replace("[", "")
-                parts = parts.replace(cut, "").split()
-                cut = cut.split()
+                tipo, part = line.split(":", 1)
+                cuts = part[part.find("["):part.find("]")].replace("[", "")
+                parts = part.replace(cuts, "").split()
+                cut = cuts.split()
                 for elem in cut:
                     temp = elem.split("=")
                     metadata.update({temp[0]: temp[1]})
                 hubs.update({parts[0]: (parts[1], parts[2], tipo, metadata)})
                 metadata = {}
             elif line.startswith(("connection:")):
-                tipo, parts = line.split(":", 1)
-                parts = parts.strip().split("-")
-                connections.append(tuple(parts))
-    return {"drones": nb_drones, "hubs": hubs, "connections": connections}
+                tipo, partsk = line.split(":", 1)
+                temp = partsk.strip().split("-")
+                connections.append(tuple(temp))
+    result = {"drones": nb_drones, "hubs": hubs, "connections": connections}
+    return result

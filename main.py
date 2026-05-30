@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
+from typing import Any
 import pygame
 from sky import sky
 from fly_in import zone_factory
@@ -9,7 +10,7 @@ from fly_in import drone_factory
 from fly_in import parse_input
 
 
-def zone_build(input_list) -> list:
+def zone_build(input_list: dict[str, list[Any]]) -> list[Any]:
     zone_list = []
     for key, value in input_list.items():
         zone = zone_factory()
@@ -23,7 +24,7 @@ def zone_build(input_list) -> list:
     return zone_list
 
 
-def drone_build(drone_number):
+def drone_build(drone_number: int) -> list[Any]:
     drone_list = []
     for i in range(0, drone_number):
         drone = drone_factory(i, [80, 80])
@@ -32,7 +33,7 @@ def drone_build(drone_number):
     return drone_list
 
 
-def connection_build(connections):
+def connection_build(connections: list[Any]) -> list[Any]:
     connect_list = []
     for elem in connections:
         connection = connection_factory()
@@ -47,9 +48,9 @@ def connection_build(connections):
     return connect_list
 
 
-
-def main():
+def main() -> None:
     skypath = sky()
+
     sky_1 = parse_input("maps/hard/03_ultimate_challenge.txt")
 
     hubs = sky_1["hubs"]
