@@ -9,7 +9,7 @@ class sky():
             height=900,
             widht=1900,
             txt_color="White",
-            screen_color="Orange",
+            screen_color=(0, 180, 180),
             ) -> None:
         pygame.init()
         pygame.font.init()
@@ -23,32 +23,40 @@ class sky():
     def sky_zone_set(self, zone_list):
         x_max = 0
         y_max = 0
+        x_min = 0
+        y_min = 0
         for zone in zone_list:
             if int(zone.xy[0]) > x_max:
                 x_max = int(zone.xy[0])
             if int(zone.xy[1]) > y_max:
                 y_max = int(zone.xy[1])
         for zone in zone_list:
-            zone.xy[0] = int(self.width / (x_max + 2)) * (int(zone.xy[0]) + 1)
-            zone.xy[1] = int(self.height / (y_max + 2)) * (int(zone.xy[1]) + 1)
+            if int(zone.xy[0]) < x_min:
+                x_min = int(zone.xy[0])
+            if int(zone.xy[1]) < y_min:
+                y_min = int(zone.xy[1])
+        x_min = abs(x_min)
+        y_min = abs(y_min)
+        for zone in zone_list:
+            zone.xy[0] = int(self.width / (x_max + 2 + x_min)) * (int(zone.xy[0]) + 1 + x_min)
+            zone.xy[1] = int(self.height / (y_max + 2 + y_min)) * (int(zone.xy[1]) + 1 + y_min)
 
     def sky_draw_graph(self, zone_list, screen, connections):
-        text = pygame.font.SysFont("Impact", 24)
+        text = pygame.font.SysFont("Impact", 16)
         screen.fill(self.screen_color)
+        for conn in connections:
+            for zone in zone_list:
+                if conn.name1 == zone.name:
+                    conn.xy1 = zone.xy
+                if conn.name2 == zone.name:
+                    conn.xy2 = zone.xy
+            pygame.draw.line(screen, "black", conn.xy1, conn.xy2, width=6)
         for zone in zone_list:
-            # print(zone.name)
             txt_pos = (zone.xy[0], zone.xy[1])
             id_text = text.render(zone.name.capitalize(), True, self.txt_color)
             pygame.draw.circle(screen, zone.color, txt_pos, zone.radius)
             screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 50))
-        # for conn in connections:
-            # print(conn)
-            # for zone in zone_list:
-            #     if conn.name1 == zone.name:
-            #         conn.xy1 = zone.xy
-            #     if conn.name2 == zone.name:
-            #         conn.xy2 = zone.xy
-            #     print(conn.xy1, conn.xy2)        
+
 
     def drone_fly(self, a: list, b: list, drone, screen, dt):
         start = pygame.Vector2(a[0], a[1])

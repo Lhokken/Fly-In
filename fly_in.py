@@ -59,6 +59,7 @@ def parse_input(input_file: str):
     connections = []
     tipo = ""
     parts = ""
+    metadata = {}
     with open(input_file, "r", encoding="utf-8") as file:
         for line in file:
             line = line.strip()
@@ -67,15 +68,17 @@ def parse_input(input_file: str):
             if line.startswith("nb_drones:"):
                 nb_drones = int(line.split(":")[1].strip())
             elif line.startswith(("start_hub:", "hub:", "end_hub:")):
-                tipo, resto = line.split(":", 1)
-                parts = resto.strip().split()
-                parts[3] = parts[3].replace("]", "")
-                if len(parts) == 5:
-                    hubs.update({parts[0]: (parts[1], parts[2], tipo, parts[3], parts[4])})
-                else:
-                    hubs.update({parts[0]: (parts[1], parts[2], tipo, parts[3])})
+                tipo, parts = line.split(":", 1)
+                cut = parts[parts.find("["):parts.find("]")].replace("[", "")
+                parts = parts.replace(cut, "").split()
+                cut = cut.split()
+                for elem in cut:
+                    temp = elem.split("=")
+                    metadata.update({temp[0]: temp[1]})
+                hubs.update({parts[0]: (parts[1], parts[2], tipo, metadata)})
+                metadata = {}
             elif line.startswith(("connection:")):
-                tipo, resto = line.split(":", 1)
-                parts = resto.strip().split("-")
+                tipo, parts = line.split(":", 1)
+                parts = parts.strip().split("-")
                 connections.append(tuple(parts))
     return {"drones": nb_drones, "hubs": hubs, "connections": connections}

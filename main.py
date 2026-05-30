@@ -11,6 +11,7 @@ from fly_in import parse_input
 
 def zone_build(input_list) -> list:
     zone_list = []
+    # print(input_list)
     for key, value in input_list.items():
         zone = zone_factory()
         max_drones = 1
@@ -19,8 +20,8 @@ def zone_build(input_list) -> list:
         zone.name = key
         zone.xy = [value[0], value[1]]
         zone.type = value[2]
-        zone.color = value[3][7:]
-        zone.max_drones = max_drones
+        zone.color = value[3].get("color")
+        zone.max_drones = value[3].get("max_drones")
         zone_list.append(zone)
     return zone_list
 
@@ -39,17 +40,17 @@ def connection_build(connections):
     for elem in connections:
         connection = connection_factory()
         connection.name1 = elem[0]
-        print(elem)
+        # print(elem)
         if "[" in elem[1]:
             parse = elem[1].split()
-            print("<>", parse)
+            # print("<>", parse)
             connection.name2 = parse[0]
             connection.max_link_capacity = (parse[1].split("=")[1]).strip("]")
         else:
             connection.name2 = elem[1]
-        print("name1", connection.name1)
-        print("name2", connection.name2)
-        print("max", connection.max_link_capacity)
+        # print("name1", connection.name1)
+        # print("name2", connection.name2)
+        # print("max", connection.max_link_capacity)
         connect_list.append(connection)
     return connect_list
 
@@ -57,15 +58,17 @@ def connection_build(connections):
 
 def main():
     skypath = sky()
-    sky_1 = parse_input("maps/medium/01_dead_end_trap.txt")
-    drone_list = drone_build(sky_1["drones"])
+    sky_1 = parse_input("maps/hard/03_ultimate_challenge.txt")
 
     hubs = sky_1["hubs"]
-    zones = zone_build(hubs)
+    drones = sky_1["drones"]
     connections = sky_1["connections"]
+
+    zones = zone_build(hubs)
+    drone_list = drone_build(drones)
     connect_list = connection_build(connections)
 
-    skypath.sky_build(zones, drone_list, connections)
+    skypath.sky_build(zones, drone_list, connect_list)
 
     pygame.quit()
 
