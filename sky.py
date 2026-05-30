@@ -42,7 +42,6 @@ class sky():
             zone.xy[1] = int(self.height / (y_max + 2 + y_min)) * (int(zone.xy[1]) + 1 + y_min)
 
     def sky_draw_graph(self, zone_list, screen, connections):
-        text = pygame.font.SysFont("Impact", 16)
         screen.fill(self.screen_color)
         for conn in connections:
             for zone in zone_list:
@@ -50,19 +49,35 @@ class sky():
                     conn.xy1 = zone.xy
                 if conn.name2 == zone.name:
                     conn.xy2 = zone.xy
+            txt_pos = (conn.xy1, conn.xy2)
+            text = pygame.font.SysFont("Impact", 22)
+            id_text = text.render(str(conn.max_link_capacity), True, self.txt_color)
             pygame.draw.line(screen, "black", conn.xy1, conn.xy2, width=6)
+            a = (conn.xy1[0] + conn.xy2[0]) / 2
+            b = (conn.xy1[1] + conn.xy2[1]) / 2
+            screen.blit(id_text, (a, b))
         for zone in zone_list:
+            text = pygame.font.SysFont("Impact", 16)
             txt_pos = (zone.xy[0], zone.xy[1])
             id_text = text.render(zone.name.capitalize(), True, self.txt_color)
             pygame.draw.circle(screen, zone.color, txt_pos, zone.radius)
             screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 50))
+            id_text = text.render(zone.max_drones, True, "black")
+            screen.blit(id_text, (zone.xy[0] - 5, zone.xy[1] - 5))
+            print(zone.priority)
+            if zone.priority == "priority":
+                id_text = text.render("P", True, "black")
+                screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 5))
+            if zone.priority == "restricted":
+                id_text = text.render("X", True, "black")
+                screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 5))
 
 
     def drone_fly(self, a: list, b: list, drone, screen, dt):
         start = pygame.Vector2(a[0], a[1])
         target = pygame.Vector2(b[0], b[0])
         direction = target - start
-        txt_pos = (start.x - 7, start.y - 12)
+        txt_pos = (start.x - 4, start.y - 6)
         pygame.draw.circle(screen, drone.drone_color, start, drone.drone_radius)
         screen.blit(drone.id_rend, txt_pos)
         direction = target - start
@@ -78,7 +93,6 @@ class sky():
         screen = pygame.display.set_mode((self.width, self.height))
         clock = self.clock
         dt = 0
-        # print(connections)
         running = True
         start = [50, 50]
         target = [400, 1700]

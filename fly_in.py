@@ -11,9 +11,10 @@ class zone_factory():
             start_hub: str="",
             end_hub: str="",
             type: str="",
-            radius: int=30,
+            radius: int=20,
             max_drones: int=1,
             next: list=[tuple],
+            priority: str=""
             ) -> None:
         self.name = name
         self.xy: list=[0, 0]
@@ -24,6 +25,7 @@ class zone_factory():
         self.radius = radius
         self.max_drones = max_drones
         self.next = next
+        self.priority = priority
 
 
 class connection_factory():
@@ -41,13 +43,13 @@ class drone_factory():
             drone_id,
             start,
             drone_color="brown",
-            drone_radius=20
+            drone_radius=15
             ) -> None:
         self.drone_id = drone_id
         self.start = start
         self.drone_color = drone_color
         self.drone_radius = drone_radius
-        self.id_txt = pygame.font.SysFont("Arial", 24)
+        self.id_txt = pygame.font.SysFont("Arial", 12)
         self.id_rend = self.id_txt.render(
                     str(self.drone_id), True, "white"
                     )

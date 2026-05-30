@@ -11,17 +11,14 @@ from fly_in import parse_input
 
 def zone_build(input_list) -> list:
     zone_list = []
-    # print(input_list)
     for key, value in input_list.items():
         zone = zone_factory()
-        max_drones = 1
-        if len(value) == 5:
-            max_drones = value[4][11:-1]
         zone.name = key
         zone.xy = [value[0], value[1]]
         zone.type = value[2]
         zone.color = value[3].get("color")
         zone.max_drones = value[3].get("max_drones")
+        zone.priority = value[3].get("zone")
         zone_list.append(zone)
     return zone_list
 
@@ -40,17 +37,12 @@ def connection_build(connections):
     for elem in connections:
         connection = connection_factory()
         connection.name1 = elem[0]
-        # print(elem)
         if "[" in elem[1]:
             parse = elem[1].split()
-            # print("<>", parse)
             connection.name2 = parse[0]
             connection.max_link_capacity = (parse[1].split("=")[1]).strip("]")
         else:
             connection.name2 = elem[1]
-        # print("name1", connection.name1)
-        # print("name2", connection.name2)
-        # print("max", connection.max_link_capacity)
         connect_list.append(connection)
     return connect_list
 
