@@ -55,11 +55,10 @@ def main() -> None:
     sky_menu = menu("maps")
     sky_menu.menu_sky()
     running = True
-
     skypath = sky()
 
     sky_menu.menu_zone_set(skypath.width, skypath.height)
-
+    
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -68,8 +67,8 @@ def main() -> None:
         if keys[pygame.K_q]:
             break
         sky_menu.menu_build(skypath.width, skypath.height)
-
-        sky_1 = parse_input("maps/hard/03_ultimate_challenge.txt")
+        print(sky_menu.file_path)
+        sky_1 = parse_input(sky_menu.file_path)
 
         hubs = sky_1["hubs"]
         drones = sky_1["drones"]

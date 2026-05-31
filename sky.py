@@ -22,6 +22,7 @@ class sky():
         self.screen_color = screen_color
         self.id_txt = pygame.font.SysFont("Impact", 18)
         self.clock = pygame.time.Clock()
+        self.file = ""
 
     def sky_zone_set(self, zone_list: list[Any]) -> None:
         x_max = 0

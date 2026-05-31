@@ -14,6 +14,8 @@ class menu(sky):
             ) -> None:
         self.index = index
         self.input = input
+        self.iter_index = iter(self.index)
+        self.file_path = "null"
 
     def menu_sky(self) -> None:
         path = Path(self.input)
@@ -35,39 +37,66 @@ class menu(sky):
         span = self.menu_zone_set(width, height)
         oriz = span[1]
         vert = span[0]
+        difficulty = "medium"
+        file = ""
+        files = []
+        files_list = iter([])
+        flag = ""
+        diff = ""
         while running:
             x = -200
             y = 0
             rectangle = pygame.Rect(80 + y, 300 + x, 300, 80)
-            cur = [rectangle.x, rectangle.y]
             for key, value in self.index.items():
-                pygame.draw.rect(screen, "white", rectangle, width=4)
+                if difficulty == key:
+                    color = "red"
+                    files = value
+                else:
+                    color = "white"
+                pygame.draw.rect(screen, color, rectangle, width=4)
                 id_text = text.render(key.capitalize(), True, "white")
                 text_rect = id_text.get_rect(center=rectangle.center)
                 screen.blit(id_text, text_rect)
                 back_y = rectangle.y
                 for elem in value:
                     rectangle.y += vert
-                    elem = elem[3:-4].capitalize()
-                    elem = elem.replace("_", " ")
-                    if cur[0] == rectangle.x and cur[1] == rectangle.y:
+                    if file == elem:
                         color = "red"
                     else:
                         color = "white"
+                    elem = elem[3:-4].capitalize()
+                    elem = elem.replace("_", " ")
                     pygame.draw.rect(screen, color, rectangle, width=4)
                     id_text = text.render(elem, True, "white")
                     text_rect = id_text.get_rect(center=rectangle.center)
                     screen.blit(id_text, text_rect)
                 rectangle.x += oriz
                 rectangle.y = back_y
-            for event in pygame.event.get():
+            events = pygame.event.get()
+            for event in events:
                 if event.type == pygame.QUIT:
                     running = False
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_p]:
-                break
-            if keys[pygame.K_q]:
-                exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:
+                        return
+                    if event.key == pygame.K_q:
+                        exit()
+                    if event.key == pygame.K_d:
+                        flag = "change"
+                        try:
+                            difficulty = next(self.iter_index)
+                        except StopIteration:
+                            self.iter_index = iter(self.index)
+                            difficulty = next(self.iter_index)
+                    if event.key == pygame.K_f:
+                        if flag == "change":
+                            files_list = iter(files)
+                            flag = ""
+                        try:
+                            file = next(files_list)
+                            self.file_path = "maps/" + difficulty + "/" + file
+                        except StopIteration:
+                            files_list = iter(files)
             pygame.display.flip()
 
     def menu_zone_set(self, width, height) -> list[int]:
