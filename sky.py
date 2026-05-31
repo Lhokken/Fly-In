@@ -122,9 +122,14 @@ class sky():
         clock = self.clock
         dt: float = 0
         running = True
-        start = [50, 50]
-        target = [400, 1700]
+ 
         self.sky_zone_set(zone_list)
+
+        
+        start = next((zone.xy for zone in zone_list if zone.type == "start_hub"), None)
+        target = next((zone.xy for zone in zone_list if zone.type == "end_hub"), None)
+        print(start)
+        print(target)
         drone = drone_list[0]
         while running:
             for event in pygame.event.get():
