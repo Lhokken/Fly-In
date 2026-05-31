@@ -132,6 +132,8 @@ class sky():
             keys = pygame.key.get_pressed()
             if keys[pygame.K_p]:
                 break
+            if keys[pygame.K_q]:
+                break
             self.sky_draw_graph(zone_list, screen, connections)
             start = self.drone_fly(start, target, drone, screen, dt)
             dt = (clock.tick(60) / 1000)

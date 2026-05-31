@@ -8,6 +8,8 @@ from fly_in import zone_factory
 from fly_in import connection_factory
 from fly_in import drone_factory
 from fly_in import parse_input
+from fly_menu import menu
+
 
 
 def zone_build(input_list: dict[str, list[Any]]) -> list[Any]:
@@ -49,19 +51,35 @@ def connection_build(connections: list[Any]) -> list[Any]:
 
 
 def main() -> None:
+
+    sky_menu = menu("maps")
+    sky_menu.menu_sky()
+    running = True
+
     skypath = sky()
 
-    sky_1 = parse_input("maps/hard/03_ultimate_challenge.txt")
+    sky_menu.menu_zone_set(skypath.width, skypath.height)
 
-    hubs = sky_1["hubs"]
-    drones = sky_1["drones"]
-    connections = sky_1["connections"]
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_q]:
+            break
+        sky_menu.menu_build(skypath.width, skypath.height)
 
-    zones = zone_build(hubs)
-    drone_list = drone_build(drones)
-    connect_list = connection_build(connections)
+        sky_1 = parse_input("maps/hard/03_ultimate_challenge.txt")
 
-    skypath.sky_build(zones, drone_list, connect_list)
+        hubs = sky_1["hubs"]
+        drones = sky_1["drones"]
+        connections = sky_1["connections"]
+
+        zones = zone_build(hubs)
+        drone_list = drone_build(drones)
+        connect_list = connection_build(connections)
+
+        skypath.sky_build(zones, drone_list, connect_list)
 
     pygame.quit()
 
