@@ -26,35 +26,35 @@ class menu(sky):
             filepath = f"{path}/{director}"
             files = [d.name for d in Path(filepath).iterdir() if d.is_file()]
             index.update({director: files})
+            print(index)
         self.index = index
 
     def menu_build(self, width, height) -> None:
         pygame.init()
         pygame.font.init()
         screen = pygame.display.set_mode((width, height))
-        text = pygame.font.SysFont("Arial", 30)
         running = True
         span = self.menu_zone_set(width, height)
-        oriz = span[1]
-        vert = span[0]
-        difficulty = "medium"
-        file = ""
+        oriz = span[0]
+        vert = span[1]
+        difficulty = "easy"
+        file = "01_linear_path.txt"
         files = []
         files_list = iter([])
         flag = ""
-        diff = ""
         while running:
-            x = -200
+            text = pygame.font.SysFont("Arial", 20)
+            x = 0
             y = 0
-            rectangle = pygame.Rect(80 + y, 300 + x, 300, 80)
+            rectangle = pygame.Rect(50 + y, 250 + x, 250, 80)
             for key, value in self.index.items():
                 if difficulty == key:
                     color = "red"
                     files = value
                 else:
-                    color = "white"
+                    color = "gray"
                 pygame.draw.rect(screen, color, rectangle, width=4)
-                id_text = text.render(key.capitalize(), True, "white")
+                id_text = text.render(key.capitalize(), True, "gray")
                 text_rect = id_text.get_rect(center=rectangle.center)
                 screen.blit(id_text, text_rect)
                 back_y = rectangle.y
@@ -63,11 +63,11 @@ class menu(sky):
                     if file == elem:
                         color = "red"
                     else:
-                        color = "white"
+                        color = "gray"
                     elem = elem[3:-4].capitalize()
                     elem = elem.replace("_", " ")
                     pygame.draw.rect(screen, color, rectangle, width=4)
-                    id_text = text.render(elem, True, "white")
+                    id_text = text.render(elem, True, "gray")
                     text_rect = id_text.get_rect(center=rectangle.center)
                     screen.blit(id_text, text_rect)
                 rectangle.x += oriz
@@ -97,6 +97,14 @@ class menu(sky):
                             self.file_path = "maps/" + difficulty + "/" + file
                         except StopIteration:
                             files_list = iter(files)
+            title = pygame.Rect(50, 50, width - 200, 170)
+            pygame.draw.rect(screen, "gray", title, width=4)
+            text = pygame.font.SysFont("Arial", 35)
+            id_text = text.render(
+                "Press 'D' to change difficulty - Press 'F' to change map - "
+                "Press 'P' to flip menu/graph - Press 'Q' to quit", True, "gray")
+            text_rect = id_text.get_rect(center=title.center)
+            screen.blit(id_text, text_rect)
             pygame.display.flip()
 
     def menu_zone_set(self, width, height) -> list[int]:
@@ -106,5 +114,5 @@ class menu(sky):
         for _, value in self.index.items():
             if len(value) > y_max:
                 y_max = len(value)
-        span = [(int(height / (x_max + 1))), (int(width / (y_max + 1)))]
+        span = [(int(width / (y_max + 3))), (int(height / (x_max + 2)))]
         return span

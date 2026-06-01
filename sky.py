@@ -70,11 +70,20 @@ class sky():
             b = -6 + (conn.xy1[1] + conn.xy2[1]) / 2
             screen.blit(id_text, (a, b))
         for zone in zone_list:
-            text = pygame.font.SysFont("Impact", 16)
+            text = pygame.font.SysFont("Impact", 18)
             txt_pos = (zone.xy[0], zone.xy[1])
-            id_text = text.render(zone.name.capitalize(), True, self.txt_color)
+            if zone.color == "rainbow":
+                zone.color = "violet"
             pygame.draw.circle(screen, zone.color, txt_pos, zone.radius)
-            screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 50))
+            if "_" in zone.name:
+                z_name = zone.name.split("_", 1)
+                id_text = text.render(z_name[0].capitalize(), True, self.txt_color)
+                screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 50))
+                id_text = text.render(z_name[1], True, self.txt_color)
+                screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 37))
+            else:
+                id_text = text.render(zone.name.capitalize(), True, self.txt_color)
+                screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 40))
             id_text = text.render(zone.max_drones, True, "black")
             screen.blit(id_text, (zone.xy[0] - 5, zone.xy[1] - 5))
             if zone.priority == "priority":
@@ -86,29 +95,26 @@ class sky():
 
     def drone_fly(
             self,
-            a: list[int],
-            b: list[int],
+            a: list[float],
+            b: list[float],
             drone: drone_factory,
-            screen: pygame.surface.Surface,
-            dt: float
-            ) -> list[int]:
+            screen: pygame.surface.Surface
+            ) -> list[float]:
         start = pygame.Vector2(a[0], a[1])
-        target = pygame.Vector2(b[0], b[0])
+        target = pygame.Vector2(b[0], b[1])
         direction = target - start
-        txt_pos = (start.x - 4, start.y - 6)
+        position = (start.x - 4, start.y - 6)
         pygame.draw.circle(
             screen,
             drone.drone_color,
             start,
             drone.drone_radius
             )
-        screen.blit(drone.id_rend, txt_pos)
-        direction = target - start
-        if direction.length() > 5:
+        screen.blit(drone.id_rend, position)
+        if direction.length() > 1:
             direction = direction.normalize()
-            start = pygame.Vector2(start + direction * 300 * dt)
-        pygame.display.flip()
-        return [int(start[0]), int(start[1])]
+            start = pygame.Vector2(start + direction * 1.2)
+        return [start[0], start[1]]
 
     def sky_build(
             self,
@@ -119,18 +125,15 @@ class sky():
         pygame.init()
         pygame.font.init()
         screen = pygame.display.set_mode((self.width, self.height))
-        clock = self.clock
-        dt: float = 0
         running = True
- 
         self.sky_zone_set(zone_list)
-
-        
-        start = next((zone.xy for zone in zone_list if zone.type == "start_hub"), None)
-        target = next((zone.xy for zone in zone_list if zone.type == "end_hub"), None)
-        print(start)
-        print(target)
+        # start = [500.0, 500.0]
+        # target = [500.0, 500.0]
+        start = next((zone.xy for zone in zone_list if zone.type == "start_hub"))
+        target = next((zone.xy for zone in zone_list if zone.type == "end_hub"))
+        screen_background = pygame.Surface((self.width, self.height))
         drone = drone_list[0]
+        self.sky_draw_graph(zone_list, screen_background, connections)
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -140,7 +143,6 @@ class sky():
                 break
             if keys[pygame.K_q]:
                 break
-            self.sky_draw_graph(zone_list, screen, connections)
-            start = self.drone_fly(start, target, drone, screen, dt)
-            dt = (clock.tick(60) / 1000)
+            screen.blit(screen_background, (0, 0))
+            start = self.drone_fly(start, target, drone, screen)
             pygame.display.flip()
