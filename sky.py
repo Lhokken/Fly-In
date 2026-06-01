@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from pydantic import ValidationError
 from typing import Any
 from fly_in import drone_factory
 import pygame
@@ -30,30 +29,52 @@ class sky():
         x_min = 0
         y_min = 0
         for zone in zone_list:
-            if int(zone.xy[0]) > x_max:
-                x_max = int(zone.xy[0])
-            if int(zone.xy[1]) > y_max:
-                y_max = int(zone.xy[1])
+            try:
+                if int(zone.xy[0]) > x_max:
+                    x_max = int(zone.xy[0])
+            except ValueError as e:
+                print(e)
+            try:
+                if int(zone.xy[1]) > y_max:
+                    y_max = int(zone.xy[1])
+            except ValueError as e:
+                print(e)
         for zone in zone_list:
-            if int(zone.xy[0]) < x_min:
-                x_min = int(zone.xy[0])
-            if int(zone.xy[1]) < y_min:
-                y_min = int(zone.xy[1])
+            try:
+                if int(zone.xy[0]) < x_min:
+                    x_min = int(zone.xy[0])
+            except ValueError as e:
+                print(e)
+            try:
+                if int(zone.xy[1]) < y_min:
+                    y_min = int(zone.xy[1])
+            except ValueError as e:
+                print(e)
         x_min = abs(x_min)
         y_min = abs(y_min)
         for zone in zone_list:
-            zone.xy[0] = int(self.width / (x_max + 2 + x_min)) * \
-                (int(zone.xy[0]) + 1 + x_min)
-            zone.xy[1] = int(self.height / (y_max + 2 + y_min)) * \
-                (int(zone.xy[1]) + 1 + y_min)
+            try:
+                zone.xy[0] = int(self.width / (x_max + 2 + x_min)) * \
+                    (int(zone.xy[0]) + 1 + x_min)
+            except ValueError as e:
+                print(e)
+            try:
+                zone.xy[1] = int(self.height / (y_max + 2 + y_min)) * \
+                    (int(zone.xy[1]) + 1 + y_min)
+            except ValueError as e:
+                print(e)
 
     def sky_draw_graph(
             self,
             zone_list: list[Any],
             screen: pygame.surface.Surface,
-            connections: list[Any]
+            connections: list[Any],
+            dr_num: int 
             ) -> None:
         screen.fill(self.screen_color)
+        text = pygame.font.SysFont("Impact", 32)
+        id_text = text.render(("Drones: " + str(dr_num)), True, self.txt_color)
+        screen.blit(id_text, (20, 20))
         for conn in connections:
             for zone in zone_list:
                 if conn.name1 == zone.name:
@@ -65,27 +86,43 @@ class sky():
             id_text = text.render(
                 str(conn.max_link_capacity), True, self.txt_color
                 )
-            pygame.draw.line(screen, "black", conn.xy1, conn.xy2, width=6)
-            a = -3 + (conn.xy1[0] + conn.xy2[0]) / 2
-            b = -6 + (conn.xy1[1] + conn.xy2[1]) / 2
-            screen.blit(id_text, (a, b))
+            try:
+                pygame.draw.line(screen, "black", conn.xy1, conn.xy2, width=6)
+                a = -3 + (conn.xy1[0] + conn.xy2[0]) / 2
+                b = -6 + (conn.xy1[1] + conn.xy2[1]) / 2
+                screen.blit(id_text, (a, b))
+            except TypeError as e:
+                print(e)
         for zone in zone_list:
             text = pygame.font.SysFont("Impact", 18)
             txt_pos = (zone.xy[0], zone.xy[1])
             if zone.color == "rainbow":
                 zone.color = "violet"
-            pygame.draw.circle(screen, zone.color, txt_pos, zone.radius)
+            try:
+                pygame.draw.circle(screen, zone.color, txt_pos, zone.radius)
+            except (TypeError, ValueError) as e:
+                print(e)
             if "_" in zone.name:
                 z_name = zone.name.split("_", 1)
-                id_text = text.render(z_name[0].capitalize(), True, self.txt_color)
+                id_text = text.render(
+                    z_name[0].capitalize(), True, self.txt_color
+                    )
                 screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 50))
                 id_text = text.render(z_name[1], True, self.txt_color)
                 screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 37))
             else:
-                id_text = text.render(zone.name.capitalize(), True, self.txt_color)
-                screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 40))
+                id_text = text.render(
+                    zone.name.capitalize(), True, self.txt_color
+                    )
+                try:
+                    screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 40))
+                except TypeError as e:
+                    print(e)
             id_text = text.render(zone.max_drones, True, "black")
-            screen.blit(id_text, (zone.xy[0] - 5, zone.xy[1] - 5))
+            try:
+                screen.blit(id_text, (zone.xy[0] - 5, zone.xy[1] - 5))
+            except TypeError as e:
+                print(e)
             if zone.priority == "priority":
                 id_text = text.render("P", True, "black")
                 screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 5))
@@ -100,21 +137,25 @@ class sky():
             drone: drone_factory,
             screen: pygame.surface.Surface
             ) -> list[float]:
-        start = pygame.Vector2(a[0], a[1])
-        target = pygame.Vector2(b[0], b[1])
-        direction = target - start
-        position = (start.x - 4, start.y - 6)
-        pygame.draw.circle(
-            screen,
-            drone.drone_color,
-            start,
-            drone.drone_radius
-            )
-        screen.blit(drone.id_rend, position)
-        if direction.length() > 1:
-            direction = direction.normalize()
-            start = pygame.Vector2(start + direction * 1.2)
-        return [start[0], start[1]]
+        try:
+            start = pygame.Vector2(a[0], a[1])
+            target = pygame.Vector2(b[0], b[1])
+            direction = target - start
+            position = (start.x - 4, start.y - 6)
+            pygame.draw.circle(
+                screen,
+                drone.drone_color,
+                start,
+                drone.drone_radius
+                )
+            screen.blit(drone.id_rend, position)
+            if direction.length() > 1:
+                direction = direction.normalize()
+                start = pygame.Vector2(start + direction * 1.2)
+            return [start[0], start[1]]
+        except (ValueError, UnboundLocalError) as e:
+            print(e)
+            exit()
 
     def sky_build(
             self,
@@ -126,14 +167,21 @@ class sky():
         pygame.font.init()
         screen = pygame.display.set_mode((self.width, self.height))
         running = True
+        dr_list = True
+        hub_list = []
         self.sky_zone_set(zone_list)
-        # start = [500.0, 500.0]
-        # target = [500.0, 500.0]
-        start = next((zone.xy for zone in zone_list if zone.type == "start_hub"))
-        target = next((zone.xy for zone in zone_list if zone.type == "end_hub"))
+        start = next(
+            (zone.xy for zone in zone_list if zone.type == "start_hub")
+            )
+        target = next(
+            (zone.xy for zone in zone_list if zone.type == "end_hub")
+            )
         screen_background = pygame.Surface((self.width, self.height))
-        drone = drone_list[0]
-        self.sky_draw_graph(zone_list, screen_background, connections)
+        dr_num = len(drone_list)
+        self.sky_draw_graph(zone_list, screen_background, connections, dr_num)
+        dr_iter = iter(drone_list)
+        drone = next(dr_iter)
+        back_start = start
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -145,4 +193,13 @@ class sky():
                 break
             screen.blit(screen_background, (0, 0))
             start = self.drone_fly(start, target, drone, screen)
+            print(start)
+            print(target)
+            if (abs(start[0] - target[0]) + abs(start[1] - target[1]) < 2)\
+                and dr_list is True:
+                try:
+                    drone = next(dr_iter)
+                    start = back_start
+                except StopIteration:
+                    dr_list = False
             pygame.display.flip()

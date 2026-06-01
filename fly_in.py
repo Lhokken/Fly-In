@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from pydantic import ValidationError
 from typing import Any
 import pygame
 
@@ -50,35 +49,43 @@ class drone_factory():
         self.drone_radius = drone_radius
         self.id_txt = pygame.font.SysFont("Arial", 12)
         self.id_rend = self.id_txt.render(
-                    str(self.drone_id), True, "white"
+                    str(self.drone_id + 1), True, "white"
                     )
 
 
-def parse_input(input_file: str) -> dict[str, Any]:
+def parse_input(input_file: str) -> dict[str, Any] | None:
     nb_drones = 0
     hubs = {}
     connections = []
     metadata = {}
-    with open(input_file, "r", encoding="utf-8") as file:
-        for line in file:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            if line.startswith("nb_drones:"):
-                nb_drones = int(line.split(":")[1].strip())
-            elif line.startswith(("start_hub:", "hub:", "end_hub:")):
-                tipo, part = line.split(":", 1)
-                cuts = part[part.find("["):part.find("]")].replace("[", "")
-                parts = part.replace(cuts, "").split()
-                cut = cuts.split()
-                for elem in cut:
-                    temp = elem.split("=")
-                    metadata.update({temp[0]: temp[1]})
-                hubs.update({parts[0]: (parts[1], parts[2], tipo, metadata)})
-                metadata = {}
-            elif line.startswith(("connection:")):
-                tipo, partsk = line.split(":", 1)
-                temp = partsk.strip().split("-")
-                connections.append(tuple(temp))
-    result = {"drones": nb_drones, "hubs": hubs, "connections": connections}
-    return result
+    try:
+        with open(input_file, "r", encoding="utf-8") as file:
+            for line in file:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if line.startswith("nb_drones:"):
+                    nb_drones = int(line.split(":")[1].strip())
+                elif line.startswith(("start_hub:", "hub:", "end_hub:")):
+                    tipo, part = line.split(":", 1)
+                    cuts = part[part.find("["):part.find("]")].replace("[", "")
+                    parts = part.replace(cuts, "").split()
+                    cut = cuts.split()
+                    for elem in cut:
+                        temp = elem.split("=")
+                        metadata.update({temp[0]: temp[1]})
+                    hubs.update(
+                        {parts[0]: (parts[1], parts[2], tipo, metadata)}
+                        )
+                    metadata = {}
+                elif line.startswith(("connection:")):
+                    tipo, partsk = line.split(":", 1)
+                    temp = partsk.strip().split("-")
+                    connections.append(tuple(temp))
+        result = {
+            "drones": nb_drones, "hubs": hubs, "connections": connections
+            }
+        return result
+    except FileNotFoundError as e:
+        print(e)
+        return None

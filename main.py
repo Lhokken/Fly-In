@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from pydantic import ValidationError
 from typing import Any
 import pygame
 from sky import sky
@@ -9,7 +8,6 @@ from fly_in import connection_factory
 from fly_in import drone_factory
 from fly_in import parse_input
 from fly_menu import menu
-
 
 
 def zone_build(input_list: dict[str, list[Any]]) -> list[Any]:
@@ -50,6 +48,27 @@ def connection_build(connections: list[Any]) -> list[Any]:
     return connect_list
 
 
+def file_not_found() -> None:
+    screen = pygame.display.set_mode((800, 400))
+    title = pygame.Rect(10, 10, 780, 380)
+    pygame.draw.rect(screen, "gray", title, width=4)
+    text = pygame.font.SysFont("Arial", 35)
+    id_text = text.render(
+        "File not found - Press 'C' to continue", True, "gray"
+        )
+    text_rect = id_text.get_rect(center=title.center)
+    screen.blit(id_text, text_rect)
+    pygame.display.flip()
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_c]:
+            break
+
+
 def main() -> None:
 
     sky_menu = menu("maps")
@@ -58,7 +77,7 @@ def main() -> None:
     skypath = sky()
 
     sky_menu.menu_zone_set(skypath.width, skypath.height)
-    
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -66,19 +85,20 @@ def main() -> None:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_q]:
             break
+
         sky_menu.menu_build(skypath.width, skypath.height)
-        print(sky_menu.file_path)
+
         sky_1 = parse_input(sky_menu.file_path)
 
-        hubs = sky_1["hubs"]
-        drones = sky_1["drones"]
-        connections = sky_1["connections"]
-
-        zones = zone_build(hubs)
-        drone_list = drone_build(drones)
-        connect_list = connection_build(connections)
-
-        skypath.sky_build(zones, drone_list, connect_list)
+        if sky_1 is None or sky_1["drones"] == 0:
+            file_not_found()
+        else:
+            zones = zone_build(sky_1["hubs"])
+            drone_list = drone_build(sky_1["drones"])
+            connect_list = connection_build(
+                connections=sky_1["connections"]
+                )
+            skypath.sky_build(zones, drone_list, connect_list)
 
     pygame.quit()
 
