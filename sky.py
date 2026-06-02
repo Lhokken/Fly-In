@@ -1,8 +1,27 @@
 #!/usr/bin/env python3
 
 from typing import Any
+from collections.abc import Generator
 from fly_in import drone_factory
 import pygame
+
+color_list = {
+    "black",
+    "white",
+    "red",
+    "green",
+    "blue",
+    "yellow",
+    "magenta",
+    "cyan"
+}
+
+def ft_color_randomizer() -> Generator:
+        while True:
+            for color in color_list:
+                yield(color)
+
+color_randomizer = ft_color_randomizer()
 
 
 class sky():
@@ -64,6 +83,7 @@ class sky():
             except ValueError as e:
                 print(e)
 
+
     def sky_draw_graph(
             self,
             zone_list: list[Any],
@@ -96,8 +116,9 @@ class sky():
         for zone in zone_list:
             text = pygame.font.SysFont("Impact", 18)
             txt_pos = (zone.xy[0], zone.xy[1])
+            random_color = next(color_randomizer)
             if zone.color == "rainbow":
-                zone.color = "violet"
+                zone.color = random_color
             try:
                 pygame.draw.circle(screen, zone.color, txt_pos, zone.radius)
             except (TypeError, ValueError) as e:
@@ -129,6 +150,9 @@ class sky():
             if zone.priority == "restricted":
                 id_text = text.render("X", True, "black")
                 screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 5))
+            if zone.priority == "blocked":
+                id_text = text.render("B", True, "black")
+                screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 5))
 
     def drone_fly(
             self,
@@ -151,7 +175,7 @@ class sky():
             screen.blit(drone.id_rend, position)
             if direction.length() > 1:
                 direction = direction.normalize()
-                start = pygame.Vector2(start + direction * 1.2)
+                start = pygame.Vector2(start + direction * 2.8)
             return [start[0], start[1]]
         except (ValueError, UnboundLocalError) as e:
             print(e)
@@ -170,9 +194,7 @@ class sky():
                     temp1 = zone.xy
                 if zone.name == conn.name2:
                     temp2 = zone.xy
-                
             hub_list.append([temp1, temp2])
-
         return hub_list
 
     def sky_build(
@@ -184,7 +206,7 @@ class sky():
         pygame.init()
         pygame.font.init()
         screen = pygame.display.set_mode((self.width, self.height))
-        phase = "drone_fly"
+        stage = "drone_fly"
         self.sky_zone_set(zone_list)
         screen_background = pygame.Surface((self.width, self.height))
         drone_number = len(drone_list)
@@ -195,11 +217,10 @@ class sky():
         drone = next(dr_iter)
         hub_list = self.path_finder(zone_list, connections)
         hub_iter = iter(hub_list)
-        path = next(hub_iter)
-        start = path[0]
-        target = path[1]
+        start, target = next(hub_iter)
 
         hub_list = self.path_finder(zone_list, connections)
+
         print(hub_list)
         running = True
         while running:
@@ -214,21 +235,17 @@ class sky():
             screen.blit(screen_background, (0, 0))
             start = self.drone_fly(start, target, drone, screen)
             if (abs(start[0] - target[0]) + abs(start[1] - target[1]) < 2)\
-                and phase == "drone_fly":
+                and stage == "drone_fly":
                 try:
-                    temp = next(hub_iter)
-                    start = temp[0]
-                    target = temp[1]
+                    start, target = next(hub_iter)
                 except StopIteration:
-                    phase = "drone_change"
-            if phase == "drone_change":
+                    stage = "drone_change"
+            if stage == "drone_change":
                 try:
                     drone = next(dr_iter)
                     hub_iter = iter(hub_list)
-                    path = next(hub_iter)
-                    start = path[0]
-                    target = path[1]
-                    phase = "drone_fly"
+                    start, target = next(hub_iter)
+                    stage = "drone_fly"
                 except StopIteration:
-                    phase = "drone_rest"
+                    stage = "drone_rest"
             pygame.display.flip()

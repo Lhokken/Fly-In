@@ -75,9 +75,7 @@ def main() -> None:
     sky_menu.menu_file_mapping()
     running = True
     skypath = sky()
-
     sky_menu.menu_zone_set(skypath.width, skypath.height)
-
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -85,11 +83,8 @@ def main() -> None:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_q]:
             break
-
         sky_menu.menu_builder(skypath.width, skypath.height)
-
         sky_1 = parse_input(sky_menu.file_path)
-
         if sky_1 is None or sky_1["drones"] == 0:
             file_not_found()
         else:
