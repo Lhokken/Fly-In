@@ -157,6 +157,24 @@ class sky():
             print(e)
             exit()
 
+    def path_finder(self,
+            zone_list: list[Any],
+            connections: list[Any]
+            ) -> list[Any]:
+        hub_list: list[Any] = []
+        temp1 = []
+        temp2 = []
+        for conn in connections:
+            for zone in zone_list:
+                if zone.name == conn.name1:
+                    temp1 = zone.xy
+                if zone.name == conn.name2:
+                    temp2 = zone.xy
+                
+            hub_list.append([temp1, temp2])
+
+        return hub_list
+
     def sky_build(
             self,
             zone_list: list[Any],
@@ -166,22 +184,24 @@ class sky():
         pygame.init()
         pygame.font.init()
         screen = pygame.display.set_mode((self.width, self.height))
-        running = True
-        dr_list = True
-        hub_list = []
+        phase = "drone_fly"
         self.sky_zone_set(zone_list)
-        start = next(
-            (zone.xy for zone in zone_list if zone.type == "start_hub")
-            )
-        target = next(
-            (zone.xy for zone in zone_list if zone.type == "end_hub")
-            )
         screen_background = pygame.Surface((self.width, self.height))
-        dr_num = len(drone_list)
-        self.sky_draw_graph(zone_list, screen_background, connections, dr_num)
+        drone_number = len(drone_list)
+        self.sky_draw_graph(
+            zone_list, screen_background, connections, drone_number
+            )
         dr_iter = iter(drone_list)
         drone = next(dr_iter)
-        back_start = start
+        hub_list = self.path_finder(zone_list, connections)
+        hub_iter = iter(hub_list)
+        path = next(hub_iter)
+        start = path[0]
+        target = path[1]
+
+        hub_list = self.path_finder(zone_list, connections)
+        print(hub_list)
+        running = True
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -193,13 +213,22 @@ class sky():
                 break
             screen.blit(screen_background, (0, 0))
             start = self.drone_fly(start, target, drone, screen)
-            print(start)
-            print(target)
             if (abs(start[0] - target[0]) + abs(start[1] - target[1]) < 2)\
-                and dr_list is True:
+                and phase == "drone_fly":
+                try:
+                    temp = next(hub_iter)
+                    start = temp[0]
+                    target = temp[1]
+                except StopIteration:
+                    phase = "drone_change"
+            if phase == "drone_change":
                 try:
                     drone = next(dr_iter)
-                    start = back_start
+                    hub_iter = iter(hub_list)
+                    path = next(hub_iter)
+                    start = path[0]
+                    target = path[1]
+                    phase = "drone_fly"
                 except StopIteration:
-                    dr_list = False
+                    phase = "drone_rest"
             pygame.display.flip()

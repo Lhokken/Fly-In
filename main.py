@@ -72,7 +72,7 @@ def file_not_found() -> None:
 def main() -> None:
 
     sky_menu = menu("maps")
-    sky_menu.menu_sky()
+    sky_menu.menu_file_mapping()
     running = True
     skypath = sky()
 
@@ -86,20 +86,18 @@ def main() -> None:
         if keys[pygame.K_q]:
             break
 
-        sky_menu.menu_build(skypath.width, skypath.height)
+        sky_menu.menu_builder(skypath.width, skypath.height)
 
         sky_1 = parse_input(sky_menu.file_path)
 
         if sky_1 is None or sky_1["drones"] == 0:
             file_not_found()
         else:
-            zones = zone_build(sky_1["hubs"])
-            drone_list = drone_build(sky_1["drones"])
-            connect_list = connection_build(
-                connections=sky_1["connections"]
+            skypath.sky_build(
+                zone_build(sky_1["hubs"]),
+                drone_build(sky_1["drones"]),
+                connection_build(connections=sky_1["connections"])
                 )
-            skypath.sky_build(zones, drone_list, connect_list)
-
     pygame.quit()
 
 
