@@ -5,8 +5,7 @@ from collections.abc import Generator
 from fly_in import drone_factory
 import pygame
 
-color_list = {
-    "black",
+color_set = {
     "white",
     "red",
     "green",
@@ -18,7 +17,7 @@ color_list = {
 
 def ft_color_randomizer() -> Generator:
         while True:
-            for color in color_list:
+            for color in color_set:
                 yield(color)
 
 color_randomizer = ft_color_randomizer()
@@ -83,7 +82,6 @@ class sky():
             except ValueError as e:
                 print(e)
 
-
     def sky_draw_graph(
             self,
             zone_list: list[Any],
@@ -119,6 +117,8 @@ class sky():
             random_color = next(color_randomizer)
             if zone.color == "rainbow":
                 zone.color = random_color
+            if zone.color == "black":
+                zone.color = (70, 70, 70)
             try:
                 pygame.draw.circle(screen, zone.color, txt_pos, zone.radius)
             except (TypeError, ValueError) as e:
@@ -175,27 +175,82 @@ class sky():
             screen.blit(drone.id_rend, position)
             if direction.length() > 1:
                 direction = direction.normalize()
-                start = pygame.Vector2(start + direction * 2.8)
+                start = pygame.Vector2(start + direction * 1.8)
             return [start[0], start[1]]
         except (ValueError, UnboundLocalError) as e:
             print(e)
             exit()
 
+# normal: Standard zone with cost 1 (default)
+# blocked: Inaccessible zone. Any path using it is invalid.
+# restricted: A sensitive or dangerous zone. Costs 2.
+# priority: A preferred zone. Costs 1 turn but is prioritized.
+
+    def zone_connections(
+            self,
+            zone_list: list[Any],
+            connections: list[Any]
+            ) -> None:
+        for zone in zone_list:
+            for conn in connections:
+                if zone.name == conn.name1 or zone.name == conn.name2:
+                    zone.connections.append([conn.name1, conn.name2])
+
+
+    def zone_cost(self, zone) -> int:
+        cost: int = 0
+        if zone.priority == "normal":
+            cost = 1
+        if zone.priority == "blocked":
+            cost = 500000
+        if zone.priority == "restricted":
+            cost = 2
+        if zone.priority == "priority":
+            cost = 1
+        return cost
+
     def path_finder(self,
             zone_list: list[Any],
             connections: list[Any]
             ) -> list[Any]:
-        hub_list: list[Any] = []
-        temp1 = []
-        temp2 = []
-        for conn in connections:
-            for zone in zone_list:
-                if zone.name == conn.name1:
-                    temp1 = zone.xy
-                if zone.name == conn.name2:
-                    temp2 = zone.xy
-            hub_list.append([temp1, temp2])
-        return hub_list
+        curr_hub: list[Any] = []
+        temp_hub: list[Any] = []
+        path: list[Any] = []
+
+        self.zone_connections(zone_list, connections)
+        curr_hub.append(zone_list[0])
+        curr_hub[0].check = "visited"
+        curr_hub[0].cost = 0
+        for _ in range(15):
+            for zone in curr_hub:
+                if zone.name == "goal":
+                    break
+            for hub in curr_hub:
+                for conn in hub.connections:
+                    for zone in zone_list:
+                        if conn[1] == zone.name and zone.check == "unknown":
+                            zone.previous = hub.name
+                            zone.cost = 1 + hub.cost
+                            zone.check = "visited"
+                            temp_hub.append(zone)
+                    curr_hub = []
+                    curr_hub = temp_hub
+                    temp_hub = []
+        zone_dict = {}
+        zone_dict = {zone.name: zone for zone in zone_list}
+        curr = zone_list[-1]
+        check = True
+        while check == True:
+            if curr.previous is None:
+                continue
+            print(curr.previous)
+            temp = zone_dict.get(curr.previous)
+            path.append([temp.xy, curr.xy])
+            print(curr.previous)
+            curr = temp
+            if curr.name == "start":
+                check = False
+        return path[::-1]
 
     def sky_build(
             self,
@@ -219,9 +274,7 @@ class sky():
         hub_iter = iter(hub_list)
         start, target = next(hub_iter)
 
-        hub_list = self.path_finder(zone_list, connections)
 
-        print(hub_list)
         running = True
         while running:
             for event in pygame.event.get():
