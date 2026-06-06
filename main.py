@@ -25,7 +25,7 @@ def connection_build(connections: list[Any]) -> list[Any]:
     return connect_list
 
 
-def zone_build(input_list: dict[str, list[Any]]) -> list[Any]:
+def zone_build(input_list: dict[str, list[Any]]) -> list[zone_factory]:
     zone_list = []
     for key, value in input_list.items():
         zone = zone_factory()

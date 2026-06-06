@@ -5,6 +5,9 @@ from collections.abc import Generator
 from fly_in import drone_factory
 import pygame
 import random
+from fly_in import zone_factory as zone
+from fly_in import drone_factory as drone
+from fly_in import connection_factory as connections
 
 color_set = {
     "white",
@@ -42,7 +45,7 @@ class sky():
         self.clock = pygame.time.Clock()
         self.file = ""
 
-    def sky_zone_set(self, zone_list: list[Any]) -> None:
+    def sky_zone_set(self, zone_list: list[zone]) -> None:
         x_max = 0
         y_max = 0
         x_min = 0
@@ -85,9 +88,9 @@ class sky():
 
     def sky_draw_graph(
             self,
-            zone_list: list[Any],
+            zone_list: list[zone],
             screen: pygame.surface.Surface,
-            connections: list[Any],
+            connections: list[connections],
             dr_num: int 
             ) -> None:
         screen.fill(self.screen_color)
@@ -140,7 +143,7 @@ class sky():
                     screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 40))
                 except TypeError as e:
                     print(e)
-            id_text = text.render(zone.max_drones, True, "black")
+            id_text = text.render(str(zone.max_drones), True, "black")
             try:
                 screen.blit(id_text, (zone.xy[0] - 5, zone.xy[1] - 5))
             except TypeError as e:
@@ -167,8 +170,8 @@ class sky():
             target = pygame.Vector2(b[0], b[1])
             direction = target - start
             trem = 0
-            if direction.length() < 45:
-                trem = random.randint(8, 12)
+            if direction.length() < 65 and direction.length() > 15:
+                trem = random.randint(-15, 15)
             pos = (start.x + trem, start.y + trem)
             position = (start.x - 4 + trem, start.y - 6 + trem)
             pygame.draw.circle(
@@ -199,8 +202,7 @@ class sky():
         for zone in zone_list:
             for conn in connections:
                 if zone.name == conn.name1 or zone.name == conn.name2:
-                    zone.connections.append([conn.name1, conn.name2])
-
+                    zone.link.append([conn.name1, conn.name2])
 
     def zone_cost(self, zone) -> int:
         cost: int = 0
@@ -215,8 +217,8 @@ class sky():
         return cost
 
     def path_finder(self,
-            zone_list: list[Any],
-            connections: list[Any]
+            zone_list: list[zone],
+            connections: list[connections]
             ) -> list[Any]:
         curr_hub: list[Any] = []
         temp_hub: list[Any] = []
@@ -226,12 +228,13 @@ class sky():
         curr_hub.append(zone_list[0])
         curr_hub[0].check = "visited"
         curr_hub[0].cost = 0
-        for _ in range(90):
-            for zone in curr_hub:
-                if zone.name == "goal":
-                    break
+        
+        # for zone in curr_hub:
+        #     if zone.name == "goal":
+        #         break
+        for _ in range(3):
             for hub in curr_hub:
-                for conn in hub.connections:
+                for conn in hub.link:
                     for zone in zone_list:
                         if zone.name == conn[1] and zone.check == "unknown":
                             zone.previous = conn[0]
@@ -256,8 +259,7 @@ class sky():
         test = zone_list[0]
 
         while True:
-            next = zone_dict.get(curr.previous)
-
+            next = zone_dict.get(str(curr.previous))
 
             if next is None:
                 path.append([zone_list[0].xy, curr.xy])
@@ -269,9 +271,9 @@ class sky():
 
     def sky_build(
             self,
-            zone_list: list[Any],
-            drone_list: list[Any],
-            connections: list[Any]
+            zone_list: list[zone],
+            drone_list: list[drone],
+            connections: list[connections]
             ) -> None:
         pygame.init()
         pygame.font.init()
@@ -288,7 +290,6 @@ class sky():
         hub_list = self.path_finder(zone_list, connections)
         hub_iter = iter(hub_list)
         start, target = next(hub_iter)
-
 
         running = True
         while running:

@@ -19,10 +19,10 @@ class zone_factory():
         self.xy: list[int]
         self.start_hub: str = start_hub
         self.end_hub: str = end_hub
-        self.connections: list = []
+        self.link: list = []
         self.previous: list[Any] = []
         self.type: str = type
-        self.color: str = "black"
+        self.color: Any = "black"
         self.cost: int = 50000
         self.radius: int = radius
         self.max_drones: int = max_drones
@@ -32,11 +32,11 @@ class zone_factory():
 
 class connection_factory():
     def __init__(self) -> None:
-        self.name1 = ""
-        self.name2 = ""
-        self.xy1 = ()
-        self.xy2 = ()
-        self.max_link_capacity = 1
+        self.name1: str = ""
+        self.name2: str = ""
+        self.xy1: list[int]
+        self.xy2: list[int]
+        self.max_link_capacity: int = 1
 
 
 class drone_factory():
