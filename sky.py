@@ -4,6 +4,7 @@ from typing import Any
 from collections.abc import Generator
 from fly_in import drone_factory
 import pygame
+import random
 
 color_set = {
     "white",
@@ -165,11 +166,15 @@ class sky():
             start = pygame.Vector2(a[0], a[1])
             target = pygame.Vector2(b[0], b[1])
             direction = target - start
-            position = (start.x - 4, start.y - 6)
+            trem = 0
+            if direction.length() < 45:
+                trem = random.randint(8, 12)
+            pos = (start.x + trem, start.y + trem)
+            position = (start.x - 4 + trem, start.y - 6 + trem)
             pygame.draw.circle(
                 screen,
                 drone.drone_color,
-                start,
+                pos,
                 drone.drone_radius
                 )
             screen.blit(drone.id_rend, position)
