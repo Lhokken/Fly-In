@@ -245,10 +245,10 @@ class sky():
                             temp_hub.append(zone)
                             print("<<<", temp_hub[0].name)
 
-                curr_hub = []
-                curr_hub = temp_hub
-                print("xxx", curr_hub)
-                temp_hub = []
+            curr_hub = []
+            curr_hub = temp_hub
+            print("xxx", curr_hub)
+            temp_hub = []
         zone_dict = {}
 
         zone_dict = {
