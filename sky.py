@@ -228,23 +228,27 @@ class sky():
         curr_hub.append(zone_list[0])
         curr_hub[0].check = "visited"
         curr_hub[0].cost = 0
-        
-        # for zone in curr_hub:
-        #     if zone.name == "goal":
-        #         break
-        for _ in range(3):
+        for conn in connections:
+            print(conn.name1, conn.name2)
+
+        for _ in range(95):
             for hub in curr_hub:
+                print("<->", hub.name)
                 for conn in hub.link:
+                    print("<>", hub.name, conn)
                     for zone in zone_list:
-                        if zone.name == conn[1] and zone.check == "unknown":
+                        if zone.name == conn[1] and zone.checked is False:
+                            print("<--->", zone.name)
                             zone.previous = conn[0]
                             zone.cost = 1 + hub.cost
-                            zone.check = "visited"
+                            zone.checked = True
                             temp_hub.append(zone)
-                    curr_hub = []
-                    curr_hub = temp_hub
-                    temp_hub = []
+                            print("<<<", temp_hub[0].name)
 
+                curr_hub = []
+                curr_hub = temp_hub
+                print("xxx", curr_hub)
+                temp_hub = []
         zone_dict = {}
 
         zone_dict = {

@@ -27,7 +27,7 @@ class zone_factory():
         self.radius: int = radius
         self.max_drones: int = max_drones
         self.priority: str = priority
-        self.check: str = "unknown"
+        self.checked: bool = False
 
 
 class connection_factory():
