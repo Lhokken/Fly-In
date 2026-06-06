@@ -221,35 +221,45 @@ class sky():
         curr_hub.append(zone_list[0])
         curr_hub[0].check = "visited"
         curr_hub[0].cost = 0
-        for _ in range(15):
+        for _ in range(90):
             for zone in curr_hub:
                 if zone.name == "goal":
                     break
             for hub in curr_hub:
                 for conn in hub.connections:
                     for zone in zone_list:
-                        if conn[1] == zone.name and zone.check == "unknown":
-                            zone.previous = hub.name
+                        if zone.name == conn[1] and zone.check == "unknown":
+                            zone.previous = conn[0]
                             zone.cost = 1 + hub.cost
                             zone.check = "visited"
                             temp_hub.append(zone)
                     curr_hub = []
                     curr_hub = temp_hub
                     temp_hub = []
+
         zone_dict = {}
-        zone_dict = {zone.name: zone for zone in zone_list}
+
+        zone_dict = {
+            zone.name: zone for zone in zone_list if (
+                not zone.previous == [] and not zone is None
+                )
+                }
+        for key, value in zone_dict.items():
+            print(key, value.cost, value.previous)
+
         curr = zone_list[-1]
-        check = True
-        while check == True:
-            if curr.previous is None:
-                continue
-            print(curr.previous)
-            temp = zone_dict.get(curr.previous)
-            path.append([temp.xy, curr.xy])
-            print(curr.previous)
-            curr = temp
-            if curr.name == "start":
-                check = False
+        test = zone_list[0]
+
+        while True:
+            next = zone_dict.get(curr.previous)
+
+
+            if next is None:
+                path.append([zone_list[0].xy, curr.xy])
+                break
+            path.append([next.xy, curr.xy])
+            curr = next
+        print(path[::-1])
         return path[::-1]
 
     def sky_build(
