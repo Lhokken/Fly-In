@@ -247,7 +247,7 @@ class sky():
                     # print("<>", hub.name, conn)
                     for zone in zone_list:
                         if zone.name == conn[1] and zone.checked is False:
-                            print("<--->", zone.name)
+                            # print("<--->", zone.name)
                             if zone.priority == "blocked":
                                 continue
                             elif zone.priority == "priority":
@@ -271,11 +271,11 @@ class sky():
                                 zone.cost = 1 + hub.cost
                                 zone.checked = True
                                 temp_hub.append(zone)
-                            print("<<<", temp_hub[0].name)
+                            # print("<<<", temp_hub[0].name)
 
             curr_hub = []
             curr_hub = temp_hub
-            print("xxx", curr_hub)
+            # print("xxx", curr_hub)
             temp_hub = []
         zone_dict = {}
 
@@ -284,11 +284,10 @@ class sky():
                 not zone.previous == [] and not zone is None
                 )
                 }
-        for key, value in zone_dict.items():
-            print(key, value.cost, value.previous)
+        # for key, value in zone_dict.items():
+        #     print(key, value.cost, value.previous)
 
         curr = zone_list[-1]
-        test = zone_list[0]
 
         while True:
             next = zone_dict.get(str(curr.previous))
@@ -299,19 +298,22 @@ class sky():
             path.append([next.xy, curr.xy])
             curr = next
         
-        # path2: list[str] = []
-        # while True:
-        #     next = zone_dict.get(str(curr.previous))
 
-        #     if next is None:
-        #         path.append([zone_list[0].xy, curr.xy])
-        #         break
-        #     path2.append(next.name)
-        #     curr = next
-        # print(path2)
+        path2: list[Any] = []
+        curr = zone_list[-1]
+        path2.append(curr.name)
+        while True:
+            next = zone_dict.get(str(curr.previous))
 
+            if next is None:
+                path2.append(zone_list[0].name)
+                break
+            path2.append(next.name)
+            curr = next
+        
+        print(path2[::-1])
 
-        print(path[::-1])
+        # print(path[::-1])
         return path[::-1]
 
     def sky_build(
