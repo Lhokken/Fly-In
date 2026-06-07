@@ -95,7 +95,13 @@ class sky():
             ) -> None:
         screen.fill(self.screen_color)
         text = pygame.font.SysFont("Impact", 32)
-        id_text = text.render(("Drones: " + str(dr_num)), True, self.txt_color)
+        id_text = text.render((
+            f"Drones: {str(dr_num)} >-< Priority: P "
+             ">-< Restricted: X >-< Blocked: B"
+            ), True, self.txt_color)
+        
+
+        
         screen.blit(id_text, (20, 20))
         for conn in connections:
             for zone in zone_list:
@@ -117,14 +123,14 @@ class sky():
                 print(e)
         for zone in zone_list:
             text = pygame.font.SysFont("Impact", 18)
-            txt_pos = (zone.xy[0], zone.xy[1])
+            drn_pos = (zone.xy[0], zone.xy[1])
             random_color = next(color_randomizer)
             if zone.color == "rainbow":
                 zone.color = random_color
             if zone.color == "black":
                 zone.color = (70, 70, 70)
             try:
-                pygame.draw.circle(screen, zone.color, txt_pos, zone.radius)
+                pygame.draw.circle(screen, zone.color, drn_pos, zone.radius)
             except (TypeError, ValueError) as e:
                 print(e)
             if "_" in zone.name:
@@ -150,13 +156,13 @@ class sky():
                 print(e)
             if zone.priority == "priority":
                 id_text = text.render("P", True, "black")
-                screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 5))
+                screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 15))
             if zone.priority == "restricted":
                 id_text = text.render("X", True, "black")
-                screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 5))
+                screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 15))
             if zone.priority == "blocked":
                 id_text = text.render("B", True, "black")
-                screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 5))
+                screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 15))
 
     def drone_fly(
             self,
@@ -169,16 +175,16 @@ class sky():
             start = pygame.Vector2(a[0], a[1])
             target = pygame.Vector2(b[0], b[1])
             direction = target - start
-            trem = 0
+            enlarger = 0
             if direction.length() < 65 and direction.length() > 15:
-                trem = random.randint(-15, 15)
-            pos = (start.x + trem, start.y + trem)
-            position = (start.x - 4 + trem, start.y - 6 + trem)
+                enlarger = 10
+            pos = (start.x , start.y)
+            position = (start.x - 4, start.y - 6)
             pygame.draw.circle(
                 screen,
                 drone.drone_color,
                 pos,
-                drone.drone_radius
+                drone.drone_radius + enlarger
                 )
             screen.blit(drone.id_rend, position)
             if direction.length() > 1:
@@ -188,11 +194,6 @@ class sky():
         except (ValueError, UnboundLocalError) as e:
             print(e)
             exit()
-
-# normal: Standard zone with cost 1 (default)
-# blocked: Inaccessible zone. Any path using it is invalid.
-# restricted: A sensitive or dangerous zone. Costs 2.
-# priority: A preferred zone. Costs 1 turn but is prioritized.
 
     def zone_connections(
             self,
@@ -216,6 +217,11 @@ class sky():
             cost = 1
         return cost
 
+# normal: Standard zone with cost 1 (default)
+# blocked: Inaccessible zone. Any path using it is invalid.
+# restricted: A sensitive or dangerous zone. Costs 2.
+# priority: A preferred zone. Costs 1 turn but is prioritized.
+
     def path_finder(self,
             zone_list: list[zone],
             connections: list[connections]
@@ -230,8 +236,7 @@ class sky():
         curr_hub[0].cost = 0
         for conn in connections:
             print(conn.name1, conn.name2)
-
-        for _ in range(95):
+        for _ in range(15):
             for hub in curr_hub:
                 print("<->", hub.name)
                 for conn in hub.link:
