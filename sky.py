@@ -151,7 +151,7 @@ class sky():
                     print(e)
             id_text = text.render(str(zone.max_drones), True, "black")
             try:
-                screen.blit(id_text, (zone.xy[0] - 5, zone.xy[1] - 5))
+                screen.blit(id_text, (zone.xy[0] - 15, zone.xy[1] - 5))
             except TypeError as e:
                 print(e)
             if zone.priority == "priority":
@@ -234,20 +234,43 @@ class sky():
         curr_hub.append(zone_list[0])
         curr_hub[0].check = "visited"
         curr_hub[0].cost = 0
-        for conn in connections:
-            print(conn.name1, conn.name2)
-        for _ in range(15):
+        # for conn in connections:
+        #     print(conn.name1, conn.name2)
+        check = True
+        while check:
             for hub in curr_hub:
-                print("<->", hub.name)
+                if hub.type == "end_hub":
+                    check = False
+            for hub in curr_hub:
+                # print("<->", hub.name)
                 for conn in hub.link:
-                    print("<>", hub.name, conn)
+                    # print("<>", hub.name, conn)
                     for zone in zone_list:
                         if zone.name == conn[1] and zone.checked is False:
                             print("<--->", zone.name)
-                            zone.previous = conn[0]
-                            zone.cost = 1 + hub.cost
-                            zone.checked = True
-                            temp_hub.append(zone)
+                            if zone.priority == "blocked":
+                                continue
+                            elif zone.priority == "priority":
+                                zone.previous = conn[0]
+                                zone.cost = 1 + hub.cost
+                                zone.checked = True
+                                temp_hub.append(zone)
+                            elif zone.priority == "restricted":
+                                if zone.pause is True:
+                                    zone.previous = conn[0]
+                                    zone.cost = 1 + hub.cost
+                                    zone.checked = True
+                                    zone.pause = False
+                                    temp_hub.append(zone)
+                                elif zone.pause is False:
+                                    zone.cost = 1 + hub.cost
+                                    zone.pause = True
+                                    temp_hub.append(hub)
+                            else:
+                                zone.previous = conn[0]
+                                zone.cost = 1 + hub.cost
+                                zone.checked = True
+                                temp_hub.append(zone)
                             print("<<<", temp_hub[0].name)
 
             curr_hub = []
@@ -275,6 +298,19 @@ class sky():
                 break
             path.append([next.xy, curr.xy])
             curr = next
+        
+        # path2: list[str] = []
+        # while True:
+        #     next = zone_dict.get(str(curr.previous))
+
+        #     if next is None:
+        #         path.append([zone_list[0].xy, curr.xy])
+        #         break
+        #     path2.append(next.name)
+        #     curr = next
+        # print(path2)
+
+
         print(path[::-1])
         return path[::-1]
 

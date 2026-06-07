@@ -28,6 +28,7 @@ class zone_factory():
         self.max_drones: int = max_drones
         self.priority: str = priority
         self.checked: bool = False
+        self.pause: bool = False
 
 
 class connection_factory():
