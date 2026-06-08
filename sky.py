@@ -193,19 +193,19 @@ class sky():
         dron = drone_list[0]
         dron.place = pygame.Vector2(drone_list[0].start[0], drone_list[0].start[1])
         target = pygame.Vector2(targets[0], targets[1])
-        direction: pygame.Vector2
+        # direction: pygame.Vector2
 
         while True:
             try:
                 print("start", dron.place)
                 print("target", target)
                 screen.blit(screen_background, (0, 0))
-                direction = target - dron.place
-                self.drone_fly_draw(dron, screen, direction, dron.place)
+                dron.direction = target - dron.place
+                self.drone_fly_draw(dron, screen, dron.direction, dron.place)
                 pygame.display.flip()
-                if direction.length() > 1:
-                    direction = direction.normalize()
-                    dron.place = pygame.Vector2(dron.place + direction * 1.8)
+                if dron.direction.length() > 1:
+                    dron.direction = dron.direction.normalize()
+                    dron.place = pygame.Vector2(dron.place + dron.direction * 1.8)
                     print(dron.place)
                 else:
                     dron.start = [dron.place[0], dron.place[1]]

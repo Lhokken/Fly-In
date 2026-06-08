@@ -38,6 +38,7 @@ class connection_factory():
         self.xy1: list[int]
         self.xy2: list[int]
         self.max_link_capacity: int = 1
+        self.park: list[float]
 
 
 class drone_factory():
