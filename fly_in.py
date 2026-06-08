@@ -44,7 +44,7 @@ class drone_factory():
     def __init__(
             self,
             drone_id: int,
-            start: list[int],
+            start: list[float],
             drone_color: str = "brown",
             drone_radius: int = 15
             ) -> None:

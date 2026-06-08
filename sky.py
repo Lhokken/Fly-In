@@ -100,8 +100,6 @@ class sky():
              ">-< Restricted: X >-< Blocked: B"
             ), True, self.txt_color)
         
-
-        
         screen.blit(id_text, (20, 20))
         for conn in connections:
             for zone in zone_list:
@@ -114,10 +112,17 @@ class sky():
             id_text = text.render(
                 str(conn.max_link_capacity), True, self.txt_color
                 )
+            conn.park = [
+                ((conn.xy1[0] + conn.xy2[0]) / 2),
+                ((conn.xy1[1] + conn.xy2[1]) / 2)
+                ]
+            id_text = text.render(
+                str(conn.max_link_capacity), True, self.txt_color
+                )
             try:
                 pygame.draw.line(screen, "black", conn.xy1, conn.xy2, width=6)
-                a = -3 + (conn.xy1[0] + conn.xy2[0]) / 2
-                b = -6 + (conn.xy1[1] + conn.xy2[1]) / 2
+                a = -3 + conn.park[0]
+                b = -6 + conn.park[1]
                 screen.blit(id_text, (a, b))
             except TypeError as e:
                 print(e)
@@ -164,36 +169,48 @@ class sky():
                 id_text = text.render("B", True, "black")
                 screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 15))
 
+    def drone_fly_draw(self, drone, screen, direction, place) -> None:
+        enlarger = 0
+        if direction.length() < 65 and direction.length() > 15:
+            enlarger = 10
+        pos = (place.x , place.y)
+        position = (place.x - 4, place.y - 6)
+        pygame.draw.circle(
+            screen,
+            drone.drone_color,
+            pos,
+            drone.drone_radius + enlarger
+            )
+        screen.blit(drone.id_rend, position)
+
     def drone_fly(
             self,
-            a: list[float],
-            b: list[float],
+            targets: list[float],
             drone: drone_factory,
-            screen: pygame.surface.Surface
-            ) -> list[float]:
-        try:
-            start = pygame.Vector2(a[0], a[1])
-            target = pygame.Vector2(b[0], b[1])
-            direction = target - start
-            enlarger = 0
-            if direction.length() < 65 and direction.length() > 15:
-                enlarger = 10
-            pos = (start.x , start.y)
-            position = (start.x - 4, start.y - 6)
-            pygame.draw.circle(
-                screen,
-                drone.drone_color,
-                pos,
-                drone.drone_radius + enlarger
-                )
-            screen.blit(drone.id_rend, position)
-            if direction.length() > 1:
-                direction = direction.normalize()
-                start = pygame.Vector2(start + direction * 1.8)
-            return [start[0], start[1]]
-        except (ValueError, UnboundLocalError) as e:
-            print(e)
-            exit()
+            screen: pygame.surface.Surface,
+            screen_background: pygame.surface.Surface
+            ) -> None:
+        place = pygame.Vector2(drone.start[0], drone.start[1])
+        target = pygame.Vector2(targets[0], targets[1])
+        while True:
+            try:
+                print("start", place)
+                print("target", target)
+                screen.blit(screen_background, (0, 0))
+                direction = target - place
+                self.drone_fly_draw(drone, screen, direction, place)
+                pygame.display.flip()
+                if direction.length() > 1:
+                    direction = direction.normalize()
+                    place = pygame.Vector2(place + direction * 1.8)
+                    print(place)
+                else:
+                    drone.start = [place[0], place[1]]
+                    print("test")
+                    return None
+            except (ValueError, UnboundLocalError) as e:
+                print(e)
+                exit()
 
     def zone_connections(
             self,
@@ -217,11 +234,6 @@ class sky():
             cost = 1
         return cost
 
-# normal: Standard zone with cost 1 (default)
-# blocked: Inaccessible zone. Any path using it is invalid.
-# restricted: A sensitive or dangerous zone. Costs 2.
-# priority: A preferred zone. Costs 1 turn but is prioritized.
-
     def path_finder(self,
             zone_list: list[zone],
             connections: list[connections]
@@ -230,6 +242,10 @@ class sky():
         temp_hub: list[Any] = []
         path: list[Any] = []
 
+        # normal: Standard zone with cost 1 (default)
+        # blocked: Inaccessible zone. Any path using it is invalid.
+        # restricted: A sensitive or dangerous zone. Costs 2.
+        # priority: A preferred zone. Costs 1 turn but is prioritized.
         self.zone_connections(zone_list, connections)
         curr_hub.append(zone_list[0])
         curr_hub[0].check = "visited"
@@ -286,7 +302,6 @@ class sky():
                 }
         # for key, value in zone_dict.items():
         #     print(key, value.cost, value.previous)
-
         curr = zone_list[-1]
 
         while True:
@@ -297,22 +312,20 @@ class sky():
                 break
             path.append([next.xy, curr.xy])
             curr = next
-        
 
         path2: list[Any] = []
         curr = zone_list[-1]
-        path2.append(curr.name)
+        path2.append([curr.name, curr.xy])
         while True:
             next = zone_dict.get(str(curr.previous))
 
             if next is None:
-                path2.append(zone_list[0].name)
+                path2.append([zone_list[0].name, zone_list[0].xy])
                 break
-            path2.append(next.name)
+            path2.append([next.name, next.xy])
             curr = next
-        
-        print(path2[::-1])
 
+        # print(path2[::-1])
         # print(path[::-1])
         return path[::-1]
 
@@ -335,6 +348,10 @@ class sky():
         dr_iter = iter(drone_list)
         drone = next(dr_iter)
         hub_list = self.path_finder(zone_list, connections)
+        print(hub_list)
+        for drone in drone_list:
+            drone.start = hub_list[0][0]
+
         hub_iter = iter(hub_list)
         start, target = next(hub_iter)
 
@@ -348,20 +365,19 @@ class sky():
                 break
             if keys[pygame.K_q]:
                 break
-            screen.blit(screen_background, (0, 0))
-            start = self.drone_fly(start, target, drone, screen)
-            if (abs(start[0] - target[0]) + abs(start[1] - target[1]) < 2)\
-                and stage == "drone_fly":
-                try:
-                    start, target = next(hub_iter)
-                except StopIteration:
-                    stage = "drone_change"
-            if stage == "drone_change":
-                try:
-                    drone = next(dr_iter)
-                    hub_iter = iter(hub_list)
-                    start, target = next(hub_iter)
-                    stage = "drone_fly"
-                except StopIteration:
-                    stage = "drone_rest"
-            pygame.display.flip()
+            self.drone_fly(target, drone, screen, screen_background)
+            print("ritest")
+            # if (abs(start[0] - target[0]) + abs(start[1] - target[1]) < 2)\
+            #     and stage == "drone_fly":
+            #     try:
+            #         start, target = next(hub_iter)
+            #     except StopIteration:
+            #         stage = "drone_change"
+            # if stage == "drone_change":
+            #     try:
+            #         drone = next(dr_iter)
+            #         hub_iter = iter(hub_list)
+            #         start, target = next(hub_iter)
+            #         stage = "drone_fly"
+            #     except StopIteration:
+            #         stage = "drone_rest"
