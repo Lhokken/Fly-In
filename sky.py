@@ -186,26 +186,29 @@ class sky():
     def drone_fly(
             self,
             targets: list[float],
-            drone: drone_factory,
+            drone_list: list[drone],
             screen: pygame.surface.Surface,
             screen_background: pygame.surface.Surface
             ) -> None:
-        place = pygame.Vector2(drone.start[0], drone.start[1])
+        dron = drone_list[0]
+        dron.place = pygame.Vector2(drone_list[0].start[0], drone_list[0].start[1])
         target = pygame.Vector2(targets[0], targets[1])
+        direction: pygame.Vector2
+
         while True:
             try:
-                print("start", place)
+                print("start", dron.place)
                 print("target", target)
                 screen.blit(screen_background, (0, 0))
-                direction = target - place
-                self.drone_fly_draw(drone, screen, direction, place)
+                direction = target - dron.place
+                self.drone_fly_draw(dron, screen, direction, dron.place)
                 pygame.display.flip()
                 if direction.length() > 1:
                     direction = direction.normalize()
-                    place = pygame.Vector2(place + direction * 1.8)
-                    print(place)
+                    dron.place = pygame.Vector2(dron.place + direction * 1.8)
+                    print(dron.place)
                 else:
-                    drone.start = [place[0], place[1]]
+                    dron.start = [dron.place[0], dron.place[1]]
                     print("test")
                     return None
             except (ValueError, UnboundLocalError) as e:
@@ -354,7 +357,7 @@ class sky():
 
         hub_iter = iter(hub_list)
         start, target = next(hub_iter)
-
+        
         running = True
         while running:
             for event in pygame.event.get():
@@ -365,19 +368,6 @@ class sky():
                 break
             if keys[pygame.K_q]:
                 break
-            self.drone_fly(target, drone, screen, screen_background)
+            self.drone_fly(target, drone_list, screen, screen_background)
             print("ritest")
-            # if (abs(start[0] - target[0]) + abs(start[1] - target[1]) < 2)\
-            #     and stage == "drone_fly":
-            #     try:
-            #         start, target = next(hub_iter)
-            #     except StopIteration:
-            #         stage = "drone_change"
-            # if stage == "drone_change":
-            #     try:
-            #         drone = next(dr_iter)
-            #         hub_iter = iter(hub_list)
-            #         start, target = next(hub_iter)
-            #         stage = "drone_fly"
-            #     except StopIteration:
-            #         stage = "drone_rest"
+

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import Any
+from typing import Any, Optional
 import pygame
 
 
@@ -46,12 +46,16 @@ class drone_factory():
             drone_id: int,
             start: list[float],
             drone_color: str = "brown",
-            drone_radius: int = 15
+            drone_radius: int = 15,
+            place: Optional[pygame.Vector2] = None,
+            direction: Optional[pygame.Vector2] = None
             ) -> None:
         self.drone_id = drone_id
-        self.start = start
         self.drone_color = drone_color
         self.drone_radius = drone_radius
+        self.start = start
+        self.place = place
+        self.direction = direction
         self.id_txt = pygame.font.SysFont("Arial", 12)
         self.id_rend = self.id_txt.render(
                     str(self.drone_id + 1), True, "white"
