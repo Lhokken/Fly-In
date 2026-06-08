@@ -190,10 +190,10 @@ class sky():
             ) -> None:
         try:
             dron = line_sim[0]
-        except IndexError:
+            dron.place = pygame.Vector2(dron.start[0], dron.start[1])
+            dron.target = pygame.Vector2(dron.target[0], dron.target[1])
+        except (TypeError, IndexError):
             return
-        dron.place = pygame.Vector2(dron.start[0], dron.start[1])
-        dron.target = pygame.Vector2(dron.target[0], dron.target[1])
         while True:
             try:
                 screen.blit(screen_background, (0, 0))
@@ -207,6 +207,7 @@ class sky():
                     dron.start = [dron.place[0], dron.place[1]]
                     try:
                         dron.target = pygame.Vector2(*next(dron.way))
+                        # return
                     except StopIteration:
                         line_sim.pop(0)
                         return
@@ -320,16 +321,14 @@ class sky():
 
         hub_list = self.path_finder(zone_list, connections)
 
-        drone1 = drone_list[0]
-        drone1.start = hub_list[0]
-        drone1.target = hub_list[1]
-        drone1.way = iter(hub_list[2:])
-        drone2 = drone_list[1]
-        drone2.start = hub_list[0]
-        drone2.target = hub_list[1]
-        drone2.way = iter(hub_list[2:])
+        for drone in drone_list:
+            drone.start = hub_list[0]
+            drone.target = hub_list[1]
+            drone.way = iter(hub_list[2:])
 
-        line_sim = [drone1, drone2]
+        print(drone_list)
+        line_iter = iter(drone_list)
+        line_sim = []
         running = True
         while running:
             for event in pygame.event.get():
@@ -340,7 +339,11 @@ class sky():
                 break
             if keys[pygame.K_q]:
                 break
-
+            try:
+                line_sim.append(next(line_iter))
+            except StopIteration:
+                pass
             self.drone_fly(line_sim, screen, screen_background)
+
 
 
