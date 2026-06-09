@@ -45,7 +45,7 @@ class drone_factory():
     def __init__(
             self,
             drone_id: int,
-            start: list[float],
+            start: Optional[pygame.Vector2] = None,
             way: Iterator[list[float]] = iter([]),
             drone_color: str = "brown",
             drone_radius: int = 15,

@@ -188,32 +188,38 @@ class sky():
             screen: pygame.surface.Surface,
             screen_background: pygame.surface.Surface
             ) -> None:
-        try:
-            dron = line_sim[0]
-            dron.place = pygame.Vector2(dron.start[0], dron.start[1])
-            dron.target = pygame.Vector2(dron.target[0], dron.target[1])
-        except (TypeError, IndexError):
-            return
-        while True:
+        for i in range(0, len(line_sim)):
             try:
-                screen.blit(screen_background, (0, 0))
-                dron.direction = dron.target - dron.place
-                self.drone_fly_draw(dron, screen, dron.direction, dron.place)
-                pygame.display.flip()
-                if dron.direction.length() > 1:
-                    dron.direction = dron.direction.normalize()
-                    dron.place = pygame.Vector2(dron.place + dron.direction * 1.8)
-                else:
-                    dron.start = [dron.place[0], dron.place[1]]
-                    try:
-                        dron.target = pygame.Vector2(*next(dron.way))
-                        # return
-                    except StopIteration:
-                        line_sim.pop(0)
-                        return
-            except (ValueError, UnboundLocalError) as e:
-                print(e)
-                exit()
+                dron = line_sim[i]
+                if not dron.start == None:
+                    dron.place = pygame.Vector2(dron.start[0], dron.start[1])
+                if not dron.target == None:
+                    dron.target = pygame.Vector2(dron.target[0], dron.target[1])
+            except (TypeError, IndexError):
+                return
+            while True:
+                try:
+                    screen.blit(screen_background, (0, 0))
+                    if not dron.target == None and not dron.place == None:
+                        dron.direction = dron.target - dron.place
+                    self.drone_fly_draw(dron, screen, dron.direction, dron.place)
+                    pygame.display.flip()
+                    if not dron.direction == None\
+                        and not dron.place == None\
+                        and dron.direction.length() > 1:
+                        dron.direction = dron.direction.normalize()
+                        dron.place = pygame.Vector2(dron.place + dron.direction * 1.8)
+                    elif not dron.place == None:
+                        dron.start = pygame.Vector2(dron.place[0], dron.place[1])
+                        try:
+                            dron.target = pygame.Vector2(*next(dron.way))
+                            # return
+                        except StopIteration:
+                            line_sim.pop(0)
+                            return
+                except (ValueError, UnboundLocalError) as e:
+                    print(e)
+                    exit()
 
     def zone_connections(
             self,
@@ -322,11 +328,10 @@ class sky():
         hub_list = self.path_finder(zone_list, connections)
 
         for drone in drone_list:
-            drone.start = hub_list[0]
-            drone.target = hub_list[1]
+            drone.start = pygame.Vector2(hub_list[0][0], hub_list[0][1])
+            drone.target = pygame.Vector2(hub_list[1][0], hub_list[1][1])
             drone.way = iter(hub_list[2:])
 
-        print(drone_list)
         line_iter = iter(drone_list)
         line_sim = []
         running = True
