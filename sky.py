@@ -33,6 +33,7 @@ class sky():
             widht: int = 1900,
             txt_color: str = "White",
             screen_color: tuple[int, int, int] = (0, 180, 180),
+            running: str = "fly"
             ) -> None:
         pygame.init()
         pygame.font.init()
@@ -43,6 +44,7 @@ class sky():
         self.id_txt = pygame.font.SysFont("Impact", 18)
         self.clock = pygame.time.Clock()
         self.file = ""
+        self.running = running
 
     def sky_zone_set(self, zone_list: list[zone]) -> None:
         x_max = 0
@@ -182,6 +184,19 @@ class sky():
             )
         screen.blit(drone.id_rend, position)
 
+    def keyboard_input(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = "quit"
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_p]:
+            if self.running == "menu":
+                self.running = "fly"
+            elif self.running == "fly":
+                self.running = "menu"
+        if keys[pygame.K_q]:
+            self.running = "quit"
+
     def drone_fly(
             self,
             line_sim: list[drone],
@@ -197,7 +212,8 @@ class sky():
                     dron.target = pygame.Vector2(dron.target[0], dron.target[1])
             except (TypeError, IndexError):
                 return
-            while True:
+            while self.running == "fly":
+                self.keyboard_input()
                 try:
                     screen.blit(screen_background, (0, 0))
                     if not dron.target == None and not dron.place == None:
@@ -213,7 +229,6 @@ class sky():
                         dron.start = pygame.Vector2(dron.place[0], dron.place[1])
                         try:
                             dron.target = pygame.Vector2(*next(dron.way))
-                            # return
                         except StopIteration:
                             line_sim.pop(0)
                             return
@@ -334,21 +349,10 @@ class sky():
 
         line_iter = iter(drone_list)
         line_sim = []
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_p]:
-                break
-            if keys[pygame.K_q]:
-                break
+        while self.running == "fly":
+            self.keyboard_input()
             try:
                 line_sim.append(next(line_iter))
             except StopIteration:
                 pass
             self.drone_fly(line_sim, screen, screen_background)
-
-
-
