@@ -2,9 +2,7 @@
 
 from typing import Any
 from collections.abc import Generator
-from fly_in import drone_factory
 import pygame
-import random
 from fly_in import zone_factory as zone
 from fly_in import drone_factory as drone
 from fly_in import connection_factory as connections
@@ -19,12 +17,15 @@ color_set = {
     "cyan"
 }
 
+
 def ft_color_randomizer() -> Generator:
-        while True:
-            for color in color_set:
-                yield(color)
+    while True:
+        for color in color_set:
+            yield(color)
+
 
 color_randomizer = ft_color_randomizer()
+
 
 class sky():
     def __init__(
@@ -41,7 +42,7 @@ class sky():
         self.width = widht
         self.txt_color = txt_color
         self.screen_color = screen_color
-        self.id_txt = pygame.font.SysFont("Impact", 18)
+        self.id_txt = pygame.font.SysFont("Verdana", 18)
         self.clock = pygame.time.Clock()
         self.file = ""
         self.running = running
@@ -51,39 +52,39 @@ class sky():
         y_max = 0
         x_min = 0
         y_min = 0
-        for zone in zone_list:
+        for zon in zone_list:
             try:
-                if int(zone.xy[0]) > x_max:
-                    x_max = int(zone.xy[0])
+                if int(zon.xy[0]) > x_max:
+                    x_max = int(zon.xy[0])
             except ValueError as e:
                 print(e)
             try:
-                if int(zone.xy[1]) > y_max:
-                    y_max = int(zone.xy[1])
+                if int(zon.xy[1]) > y_max:
+                    y_max = int(zon.xy[1])
             except ValueError as e:
                 print(e)
-        for zone in zone_list:
+        for zon in zone_list:
             try:
-                if int(zone.xy[0]) < x_min:
-                    x_min = int(zone.xy[0])
+                if int(zon.xy[0]) < x_min:
+                    x_min = int(zon.xy[0])
             except ValueError as e:
                 print(e)
             try:
-                if int(zone.xy[1]) < y_min:
-                    y_min = int(zone.xy[1])
+                if int(zon.xy[1]) < y_min:
+                    y_min = int(zon.xy[1])
             except ValueError as e:
                 print(e)
         x_min = abs(x_min)
         y_min = abs(y_min)
-        for zone in zone_list:
+        for zon in zone_list:
             try:
-                zone.xy[0] = int(self.width / (x_max + 2 + x_min)) * \
-                    (int(zone.xy[0]) + 1 + x_min)
+                zon.xy[0] = int(self.width / (x_max + 2 + x_min)) * \
+                    (int(zon.xy[0]) + 1 + x_min)
             except ValueError as e:
                 print(e)
             try:
-                zone.xy[1] = int(self.height / (y_max + 2 + y_min)) * \
-                    (int(zone.xy[1]) + 1 + y_min)
+                zon.xy[1] = int(self.height / (y_max + 2 + y_min)) * \
+                    (int(zon.xy[1]) + 1 + y_min)
             except ValueError as e:
                 print(e)
 
@@ -92,27 +93,22 @@ class sky():
             zone_list: list[zone],
             screen: pygame.surface.Surface,
             connections: list[connections],
-            dr_num: int 
+            dr_num: int
             ) -> None:
         screen.fill(self.screen_color)
         text = pygame.font.SysFont("Impact", 32)
         id_text = text.render((
             f"Drones: {str(dr_num)} >-< Priority: P "
-             ">-< Restricted: X >-< Blocked: B"
+            ">-< Restricted: X >-< Blocked: B"
             ), True, self.txt_color)
-        
         screen.blit(id_text, (20, 20))
         for conn in connections:
-            for zone in zone_list:
-                if conn.name1 == zone.name:
-                    conn.xy1 = zone.xy
-                if conn.name2 == zone.name:
-                    conn.xy2 = zone.xy
-            txt_pos = (conn.xy1, conn.xy2)
+            for zon in zone_list:
+                if conn.name1 == zon.name:
+                    conn.xy1 = zon.xy
+                if conn.name2 == zon.name:
+                    conn.xy2 = zon.xy
             text = pygame.font.SysFont("Impact", 22)
-            # id_text = text.render(
-            #     str(conn.max_link_capacity), True, self.txt_color
-            #     )
             conn.park = [
                 ((conn.xy1[0] + conn.xy2[0]) / 2),
                 ((conn.xy1[1] + conn.xy2[1]) / 2)
@@ -127,54 +123,54 @@ class sky():
                 screen.blit(id_text, (a, b))
             except TypeError as e:
                 print(e)
-        for zone in zone_list:
+        for zon in zone_list:
             text = pygame.font.SysFont("Impact", 18)
-            drn_pos = (zone.xy[0], zone.xy[1])
+            drn_pos = (zon.xy[0], zon.xy[1])
             random_color = next(color_randomizer)
-            if zone.color == "rainbow":
-                zone.color = random_color
-            if zone.color == "black":
-                zone.color = (70, 70, 70)
+            if zon.color == "rainbow":
+                zon.color = random_color
+            if zon.color == "black":
+                zon.color = (70, 70, 70)
             try:
-                pygame.draw.circle(screen, zone.color, drn_pos, zone.radius)
+                pygame.draw.circle(screen, zon.color, drn_pos, zon.radius)
             except (TypeError, ValueError) as e:
                 print(e)
-            if "_" in zone.name:
-                z_name = zone.name.split("_", 1)
+            if "_" in zon.name:
+                z_name = zon.name.split("_", 1)
                 id_text = text.render(
                     z_name[0].capitalize(), True, self.txt_color
                     )
-                screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 50))
+                screen.blit(id_text, (zon.xy[0] - 20, zon.xy[1] - 50))
                 id_text = text.render(z_name[1], True, self.txt_color)
-                screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 37))
+                screen.blit(id_text, (zon.xy[0] - 20, zon.xy[1] - 37))
             else:
                 id_text = text.render(
-                    zone.name.capitalize(), True, self.txt_color
+                    zon.name.capitalize(), True, self.txt_color
                     )
                 try:
-                    screen.blit(id_text, (zone.xy[0] - 20, zone.xy[1] - 40))
+                    screen.blit(id_text, (zon.xy[0] - 20, zon.xy[1] - 40))
                 except TypeError as e:
                     print(e)
-            id_text = text.render(str(zone.max_drones), True, "black")
+            id_text = text.render(str(zon.max_drones), True, "black")
             try:
-                screen.blit(id_text, (zone.xy[0] - 15, zone.xy[1] - 5))
+                screen.blit(id_text, (zon.xy[0] - 15, zon.xy[1] - 5))
             except TypeError as e:
                 print(e)
-            if zone.priority == "priority":
+            if zon.priority == "priority":
                 id_text = text.render("P", True, "black")
-                screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 15))
-            if zone.priority == "restricted":
+                screen.blit(id_text, (zon.xy[0] + 5, zon.xy[1] - 15))
+            if zon.priority == "restricted":
                 id_text = text.render("X", True, "black")
-                screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 15))
-            if zone.priority == "blocked":
+                screen.blit(id_text, (zon.xy[0] + 5, zon.xy[1] - 15))
+            if zon.priority == "blocked":
                 id_text = text.render("B", True, "black")
-                screen.blit(id_text, (zone.xy[0] + 5, zone.xy[1] - 15))
+                screen.blit(id_text, (zon.xy[0] + 5, zon.xy[1] - 15))
 
     def drone_fly_draw(self, drone, screen, direction, place) -> None:
         enlarger = 0
         if direction.length() < 65 and direction.length() > 15:
             enlarger = 10
-        pos = (place.x , place.y)
+        pos = (place.x, place.y)
         position = (place.x - 4, place.y - 6)
         pygame.draw.circle(
             screen,
@@ -201,36 +197,51 @@ class sky():
             self,
             line_sim: list[drone],
             screen: pygame.surface.Surface,
-            screen_background: pygame.surface.Surface
+            screen_background: pygame.surface.Surface,
+            line_iter
             ) -> None:
         for i in range(0, len(line_sim)):
             try:
                 dron = line_sim[i]
-                if not dron.start == None:
-                    dron.place = pygame.Vector2(dron.start[0], dron.start[1])
-                if not dron.target == None:
-                    dron.target = pygame.Vector2(dron.target[0], dron.target[1])
+                if dron.start is not None:
+                    dron.place = pygame.Vector2(
+                        dron.start[0], dron.start[1]
+                        )
+                if dron.target is not None:
+                    dron.target = pygame.Vector2(
+                        dron.target[0], dron.target[1]
+                        )
             except (TypeError, IndexError):
                 return
             while self.running == "fly":
                 self.keyboard_input()
                 try:
                     screen.blit(screen_background, (0, 0))
-                    if not dron.target == None and not dron.place == None:
+                    if dron.target is not None and dron.place is not None:
                         dron.direction = dron.target - dron.place
-                    self.drone_fly_draw(dron, screen, dron.direction, dron.place)
+                    self.drone_fly_draw(
+                        dron, screen, dron.direction, dron.place
+                        )
                     pygame.display.flip()
-                    if not dron.direction == None\
-                        and not dron.place == None\
-                        and dron.direction.length() > 1:
+                    if dron.direction is not None\
+                        and dron.place is not None\
+                            and dron.direction.length() > 1:
                         dron.direction = dron.direction.normalize()
-                        dron.place = pygame.Vector2(dron.place + dron.direction * 1.8)
-                    elif not dron.place == None:
-                        dron.start = pygame.Vector2(dron.place[0], dron.place[1])
+                        dron.place = pygame.Vector2(
+                            dron.place + dron.direction * 1.8
+                            )
+                    elif dron.place is not None:
+                        dron.start = pygame.Vector2(
+                            dron.place[0], dron.place[1]
+                            )
                         try:
                             dron.target = pygame.Vector2(*next(dron.way))
                         except StopIteration:
                             line_sim.pop(0)
+                            try:
+                                line_sim.append(next(line_iter))
+                            except StopIteration:
+                                pass
                             return
                 except (ValueError, UnboundLocalError) as e:
                     print(e)
@@ -241,10 +252,10 @@ class sky():
             zone_list: list[Any],
             connections: list[Any]
             ) -> None:
-        for zone in zone_list:
+        for zon in zone_list:
             for conn in connections:
-                if zone.name == conn.name1 or zone.name == conn.name2:
-                    zone.link.append([conn.name1, conn.name2])
+                if zon.name == conn.name1 or zon.name == conn.name2:
+                    zon.link.append([conn.name1, conn.name2])
 
     def zone_cost(self, zone) -> int:
         cost: int = 0
@@ -258,7 +269,8 @@ class sky():
             cost = 1
         return cost
 
-    def path_finder(self,
+    def path_finder(
+            self,
             zone_list: list[zone],
             connections: list[connections]
             ) -> list[Any]:
@@ -280,38 +292,38 @@ class sky():
                     check = False
             for hub in curr_hub:
                 for conn in hub.link:
-                    for zone in zone_list:
-                        if zone.name == conn[1] and zone.checked is False:
-                            if zone.priority == "blocked":
+                    for zon in zone_list:
+                        if zon.name == conn[1] and zon.checked is False:
+                            if zon.priority == "blocked":
                                 continue
-                            elif zone.priority == "priority":
-                                zone.previous = conn[0]
-                                zone.cost = 1 + hub.cost
-                                zone.checked = True
-                                temp_hub.append(zone)
-                            elif zone.priority == "restricted":
-                                if zone.pause is True:
-                                    zone.previous = conn[0]
-                                    zone.cost = 1 + hub.cost
-                                    zone.checked = True
-                                    zone.pause = False
-                                    temp_hub.append(zone)
-                                elif zone.pause is False:
-                                    zone.cost = 1 + hub.cost
-                                    zone.pause = True
+                            elif zon.priority == "priority":
+                                zon.previous = conn[0]
+                                zon.cost = 1 + hub.cost
+                                zon.checked = True
+                                temp_hub.append(zon)
+                            elif zon.priority == "restricted":
+                                if zon.pause is True:
+                                    zon.previous = conn[0]
+                                    zon.cost = 1 + hub.cost
+                                    zon.checked = True
+                                    zon.pause = False
+                                    temp_hub.append(zon)
+                                elif zon.pause is False:
+                                    zon.cost = 1 + hub.cost
+                                    zon.pause = True
                                     temp_hub.append(hub)
                             else:
-                                zone.previous = conn[0]
-                                zone.cost = 1 + hub.cost
-                                zone.checked = True
-                                temp_hub.append(zone)
+                                zon.previous = conn[0]
+                                zon.cost = 1 + hub.cost
+                                zon.checked = True
+                                temp_hub.append(zon)
             curr_hub = []
             curr_hub = temp_hub
             temp_hub = []
         zone_dict = {}
         zone_dict = {
             zone.name: zone for zone in zone_list if (
-                not zone.previous == [] and not zone is None
+                not zone.previous == [] and zone is not None
                 )
                 }
         curr = zone_list[-1]
@@ -342,17 +354,14 @@ class sky():
 
         hub_list = self.path_finder(zone_list, connections)
 
-        for drone in drone_list:
-            drone.start = pygame.Vector2(hub_list[0][0], hub_list[0][1])
-            drone.target = pygame.Vector2(hub_list[1][0], hub_list[1][1])
-            drone.way = iter(hub_list[2:])
+        for dron in drone_list:
+            dron.start = pygame.Vector2(hub_list[0][0], hub_list[0][1])
+            dron.target = pygame.Vector2(hub_list[1][0], hub_list[1][1])
+            dron.way = iter(hub_list[2:])
 
         line_iter = iter(drone_list)
         line_sim = []
+        line_sim.append(next(line_iter))
         while self.running == "fly":
             self.keyboard_input()
-            try:
-                line_sim.append(next(line_iter))
-            except StopIteration:
-                pass
-            self.drone_fly(line_sim, screen, screen_background)
+            self.drone_fly(line_sim, screen, screen_background, line_iter)
