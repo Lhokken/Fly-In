@@ -30,6 +30,7 @@ color_randomizer = ft_color_randomizer()
 class sky():
     def __init__(
             self,
+            drone_list: list[drone] = [],
             height: int = 900,
             widht: int = 1900,
             txt_color: str = "White",
@@ -38,6 +39,7 @@ class sky():
             ) -> None:
         pygame.init()
         pygame.font.init()
+        self.drone_list = drone_list
         self.height = height
         self.width = widht
         self.txt_color = txt_color
@@ -195,14 +197,12 @@ class sky():
 
     def drone_fly(
             self,
-            line_sim: list[drone],
+            line_sim: list[Any],
             screen: pygame.surface.Surface,
             screen_background: pygame.surface.Surface,
-            line_iter
             ) -> None:
-        for i in range(0, len(line_sim)):
+        for dron in self.drone_list:
             try:
-                dron = line_sim[i]
                 if dron.start is not None:
                     dron.place = pygame.Vector2(
                         dron.start[0], dron.start[1]
@@ -213,16 +213,18 @@ class sky():
                         )
             except (TypeError, IndexError):
                 return
-            while self.running == "fly":
-                self.keyboard_input()
-                try:
-                    screen.blit(screen_background, (0, 0))
+        while self.running == "fly":
+            self.keyboard_input()
+            try:
+                screen.blit(screen_background, (0, 0))
+                for dron in self.drone_list:
                     if dron.target is not None and dron.place is not None:
                         dron.direction = dron.target - dron.place
                     self.drone_fly_draw(
                         dron, screen, dron.direction, dron.place
                         )
-                    pygame.display.flip()
+                pygame.display.flip()
+                for dron in self.drone_list:
                     if dron.direction is not None\
                         and dron.place is not None\
                             and dron.direction.length() > 1:
@@ -237,15 +239,12 @@ class sky():
                         try:
                             dron.target = pygame.Vector2(*next(dron.way))
                         except StopIteration:
-                            line_sim.pop(0)
-                            try:
-                                line_sim.append(next(line_iter))
-                            except StopIteration:
-                                pass
-                            return
-                except (ValueError, UnboundLocalError) as e:
-                    print(e)
-                    exit()
+
+                            break
+
+            except (ValueError, UnboundLocalError) as e:
+                print(e)
+                exit()
 
     def zone_connections(
             self,
@@ -353,15 +352,21 @@ class sky():
             )
 
         hub_list = self.path_finder(zone_list, connections)
-
-        for dron in drone_list:
+        self.drone_list = drone_list
+        for dron in self.drone_list:
             dron.start = pygame.Vector2(hub_list[0][0], hub_list[0][1])
             dron.target = pygame.Vector2(hub_list[1][0], hub_list[1][1])
             dron.way = iter(hub_list[2:])
 
-        line_iter = iter(drone_list)
-        line_sim = []
-        line_sim.append(next(line_iter))
+        drone_list[1].start = drone_list[1].target
+        drone_list[1].target = pygame.Vector2(hub_list[2][0], hub_list[2][1])
+
+        line_sim = [
+            [drone_list[0], drone_list[0].target],
+            [drone_list[1], drone_list[1].target]
+            ]
+        print(line_sim)
+        
         while self.running == "fly":
             self.keyboard_input()
-            self.drone_fly(line_sim, screen, screen_background, line_iter)
+            self.drone_fly(line_sim, screen, screen_background)
