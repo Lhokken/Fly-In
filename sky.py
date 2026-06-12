@@ -201,30 +201,28 @@ class sky():
             screen: pygame.surface.Surface,
             screen_background: pygame.surface.Surface,
             ) -> None:
-        for dron in self.drone_list:
+        print(line_sim)
+
+        for dron, target in line_sim:
             try:
                 if dron.start is not None:
-                    dron.place = pygame.Vector2(
-                        dron.start[0], dron.start[1]
-                        )
+                    dron.place = dron.start
                 if dron.target is not None:
-                    dron.target = pygame.Vector2(
-                        dron.target[0], dron.target[1]
-                        )
+                    dron.target = target
             except (TypeError, IndexError):
                 return
         while self.running == "fly":
             self.keyboard_input()
             try:
                 screen.blit(screen_background, (0, 0))
-                for dron in self.drone_list:
-                    if dron.target is not None and dron.place is not None:
-                        dron.direction = dron.target - dron.place
+                for dron, target in line_sim:
+                    if target is not None and dron.place is not None:
+                        dron.direction = target - dron.place
                     self.drone_fly_draw(
                         dron, screen, dron.direction, dron.place
                         )
                 pygame.display.flip()
-                for dron in self.drone_list:
+                for dron, _ in line_sim:
                     if dron.direction is not None\
                         and dron.place is not None\
                             and dron.direction.length() > 1:
@@ -236,11 +234,6 @@ class sky():
                         dron.start = pygame.Vector2(
                             dron.place[0], dron.place[1]
                             )
-                        try:
-                            dron.target = pygame.Vector2(*next(dron.way))
-                        except StopIteration:
-
-                            break
 
             except (ValueError, UnboundLocalError) as e:
                 print(e)
@@ -369,4 +362,5 @@ class sky():
         
         while self.running == "fly":
             self.keyboard_input()
+
             self.drone_fly(line_sim, screen, screen_background)
