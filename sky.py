@@ -367,15 +367,13 @@ class sky():
         self.sky_draw_graph(
             zone_list, screen_background, connections, len(drone_list)
             )
-
         hub_list = self.path_finder(zone_list, connections)
-
         self.drone_list = drone_list
         for dron in self.drone_list:
             dron.start = pygame.Vector2(*hub_list[0])
             dron.target = pygame.Vector2(*hub_list[1])
             dron.way = iter(hub_list[2:])
-        iter_drone = iter(drone_list)
+        iter_drone = iter(self.drone_list)
         self.flag = True
         self.line_sim = []
         while self.running == "fly":
