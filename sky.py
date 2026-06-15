@@ -218,7 +218,6 @@ class sky():
             screen_background: pygame.surface.Surface,
             zone_list: list[zone]
             ) -> None:
-
         for dron, _ in self.line_sim:
             try:
                 if dron.start is not None:
@@ -231,7 +230,6 @@ class sky():
                 screen.blit(screen_background, (0, 0))
                 turn = []
                 for dron, _ in self.line_sim:
-                    # if dron.target is not None and dron.place is not None:
                     dron.direction = dron.target - dron.place
 
                     self.drone_fly_draw(
@@ -374,11 +372,10 @@ class sky():
 
         self.drone_list = drone_list
         for dron in self.drone_list:
-            dron.start = pygame.Vector2(hub_list[0][0], hub_list[0][1])
-            dron.target = pygame.Vector2(hub_list[1][0], hub_list[1][1])
+            dron.start = pygame.Vector2(*hub_list[0])
+            dron.target = pygame.Vector2(*hub_list[1])
             dron.way = iter(hub_list[2:])
         iter_drone = iter(drone_list)
-        print(hub_list)
         self.flag = True
         self.line_sim = []
         while self.running == "fly":
