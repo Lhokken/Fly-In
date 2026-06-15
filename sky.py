@@ -48,7 +48,7 @@ class sky():
         self.screen_color = screen_color
         self.id_txt = pygame.font.SysFont("Verdana", 18)
         self.clock = pygame.time.Clock()
-        self.file = ""
+        self.flag = True
         self.running = running
 
     def sky_zone_set(self, zone_list: list[zone]) -> None:
@@ -197,17 +197,22 @@ class sky():
         if keys[pygame.K_q]:
             self.running = "quit"
 
+    def turn_print(self, turn, zone_list) -> None:
+        result = []
+        print("------------")
+        for id, coor in turn:
+            for zone in zone_list:
+                if coor == zone.xy:
+                    result.append([id, zone.name])
+        print(result)
+        print("------------")
+
     def drone_fly(
             self,
             screen: pygame.surface.Surface,
             screen_background: pygame.surface.Surface,
+            zone_list: list[zone]
             ) -> None:
-
-        # print("------------")
-        # for dron, target in self.line_sim:
-        #     print(dron.drone_id, dron.start, dron.target)
-        # print("------------")
-
 
         for dron, _ in self.line_sim:
             try:
@@ -223,13 +228,18 @@ class sky():
                 for dron, _ in self.line_sim:
                     if dron.target is not None and dron.place is not None:
                         dron.direction = dron.target - dron.place
-                    turn.append([dron.drone_id, dron.target])
+                    if dron.flyng is True:
+                        turn.append(
+                            [dron.drone_id, [dron.target[0], dron.target[1]]]
+                            )
+
+                    if [
+                        int(dron.start[0]),
+                        int(dron.start[1])] == zone_list[-1].xy:
+                        dron.flyng = False
                     self.drone_fly_draw(
                         dron, screen, dron.direction, dron.place
                         )
-                    print("------------")
-                    print(turn)
-                    print("------------")
                 pygame.display.flip()
                 for dron, _ in self.line_sim:
                     if dron.direction is not None\
@@ -250,6 +260,7 @@ class sky():
                     temp = next(dron.way, None)
                     if temp is not None:
                         dron.target = pygame.Vector2(temp[0], temp[1])
+                self.turn_print(turn, zone_list)
                 break
 
     def zone_connections(
@@ -366,18 +377,18 @@ class sky():
             dron.way = iter(hub_list[2:])
         iter_drone = iter(drone_list)
         print(hub_list)
+        self.flag = True
+        self.line_sim = []
         while self.running == "fly":
             self.keyboard_input()
 
-            # drone_list[1].start = drone_list[1].target
-            # drone_list[1].target = pygame.Vector2(hub_list[2][0], hub_list[2][1])
-            # line_sim = [
-            #     [drone_list[0], drone_list[0].target],
-            #     [drone_list[1], drone_list[1].target]
-            #     ]
-            dron = next(iter_drone, None)
-            if dron is not None:
-                self.line_sim.append([dron, dron.target])
+            if self.flag == True:
+                dron = next(iter_drone, None)
 
-            self.drone_fly(screen, screen_background)
+                if dron is not None:
+                    self.line_sim.append([dron, dron.target])
+                elif all(dron.start == dron.target for dron, _ in self.line_sim):
+                    self.flag = False
+                    continue
+                self.drone_fly(screen, screen_background, zone_list)
 

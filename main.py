@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-from typing import Any
 import pygame
+import sys
+from typing import Any
 from sky import sky
 from fly_in import zone_factory
 from fly_in import connection_factory
@@ -88,6 +89,7 @@ def main() -> None:
                 connection_build(connections=sky_1["connections"])
                 )
     pygame.quit()
+    sys.exit()
 
 
 if __name__ == "__main__":

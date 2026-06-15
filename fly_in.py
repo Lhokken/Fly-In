@@ -45,14 +45,14 @@ class drone_factory():
     def __init__(
             self,
             drone_id: int,
-            flyng: bool = False,
+            flyng: bool = True,
             start: Optional[pygame.Vector2] = None,
             way: Iterator[list[float]] = iter([]),
             drone_color: str = "brown",
             drone_radius: int = 15,
             place: Optional[pygame.Vector2] = None,
             direction: Optional[pygame.Vector2] = None,
-            target: Optional[pygame.Vector2] = None
+            target: Optional[pygame.Vector2] = None 
             ) -> None:
         self.drone_id = drone_id
         self.flyng = flyng
