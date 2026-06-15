@@ -18,7 +18,7 @@ color_set = {
 }
 
 
-def ft_color_randomizer() -> Generator:
+def ft_color_randomizer() -> Generator[str]:
     while True:
         for color in color_set:
             yield(color)
@@ -30,7 +30,7 @@ color_randomizer = ft_color_randomizer()
 class sky():
     def __init__(
             self,
-            drone_list: list[list[drone | pygame.Vector2]] = [],
+            drone_list: list[drone] = [],
             line_sim: list[Any] = [],
             height: int = 900,
             widht: int = 1900,
@@ -170,7 +170,13 @@ class sky():
                 id_text = text.render("B", True, "black")
                 screen.blit(id_text, (zon.xy[0] + 5, zon.xy[1] - 15))
 
-    def drone_fly_draw(self, drone, screen, direction, place) -> None:
+    def drone_fly_draw(
+            self,
+            dron: drone,
+            screen: pygame.surface.Surface,
+            direction: pygame.Vector2,
+            place: pygame.Vector2
+            ) -> None:
         enlarger = 0
         if direction.length() < 65 and direction.length() > 15:
             enlarger = 10
@@ -178,13 +184,13 @@ class sky():
         position = (place.x - 4, place.y - 6)
         pygame.draw.circle(
             screen,
-            drone.drone_color,
+            dron.drone_color,
             pos,
-            drone.drone_radius + enlarger
+            dron.drone_radius + enlarger
             )
-        screen.blit(drone.id_rend, position)
+        screen.blit(dron.id_rend, position)
 
-    def keyboard_input(self):
+    def keyboard_input(self: "sky") -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = "quit"
@@ -197,13 +203,12 @@ class sky():
         if keys[pygame.K_q]:
             self.running = "quit"
 
-    def turn_print(self, turn, zone_list) -> None:
+    def turn_print(self, turn: list[Any], zone_list: list[zone]) -> None:
         result = []
-        print("------------")
         for id, coor in turn:
-            for zone in zone_list:
-                if coor == zone.xy:
-                    result.append([id, zone.name])
+            for zon in zone_list:
+                if coor == zon.xy:
+                    result.append([id + 1, zon.name])
         print(result)
         print("------------")
 
@@ -226,40 +231,37 @@ class sky():
                 screen.blit(screen_background, (0, 0))
                 turn = []
                 for dron, _ in self.line_sim:
-                    if dron.target is not None and dron.place is not None:
-                        dron.direction = dron.target - dron.place
-                    if dron.flyng is True:
-                        turn.append(
-                            [dron.drone_id, [dron.target[0], dron.target[1]]]
-                            )
+                    # if dron.target is not None and dron.place is not None:
+                    dron.direction = dron.target - dron.place
 
-                    if [
-                        int(dron.start[0]),
-                        int(dron.start[1])] == zone_list[-1].xy:
-                        dron.flyng = False
                     self.drone_fly_draw(
                         dron, screen, dron.direction, dron.place
                         )
                 pygame.display.flip()
                 for dron, _ in self.line_sim:
-                    if dron.direction is not None\
-                        and dron.place is not None\
-                            and dron.direction.length() > 1:
+                    if dron.direction.length() > 1:
                         dron.direction = dron.direction.normalize()
                         dron.place = pygame.Vector2(
                             dron.place + dron.direction * 1.8
                             )
-                    elif dron.place is not None:
+                    else:
+                        if dron.flyng is True:
+                            turn.append(
+                                [dron.drone_id,
+                                    [int(dron.target[0]),
+                                        int(dron.target[1])]]
+                            )
                         dron.start = dron.target
-
+                        if dron.start == pygame.Vector2(*zone_list[-1].xy):
+                            dron.flyng = False
             except (ValueError, UnboundLocalError) as e:
                 print(e)
                 exit()
             if all(dron.start == dron.target for dron, _ in self.line_sim):
                 for dron, _ in self.line_sim:
-                    temp = next(dron.way, None)
-                    if temp is not None:
-                        dron.target = pygame.Vector2(temp[0], temp[1])
+                    new_target = next(dron.way, None)
+                    if new_target is not None:
+                        dron.target = pygame.Vector2(new_target)
                 self.turn_print(turn, zone_list)
                 break
 
@@ -273,15 +275,15 @@ class sky():
                 if zon.name == conn.name1 or zon.name == conn.name2:
                     zon.link.append([conn.name1, conn.name2])
 
-    def zone_cost(self, zone) -> int:
+    def zone_cost(self, zon: zone) -> int:
         cost: int = 0
-        if zone.priority == "normal":
+        if zon.priority == "normal":
             cost = 1
-        if zone.priority == "blocked":
+        if zon.priority == "blocked":
             cost = 500000
-        if zone.priority == "restricted":
+        if zon.priority == "restricted":
             cost = 2
-        if zone.priority == "priority":
+        if zon.priority == "priority":
             cost = 1
         return cost
 
@@ -382,13 +384,14 @@ class sky():
         while self.running == "fly":
             self.keyboard_input()
 
-            if self.flag == True:
-                dron = next(iter_drone, None)
+            if self.flag is True:
+                tdron = next(iter_drone, None)
 
-                if dron is not None:
-                    self.line_sim.append([dron, dron.target])
-                elif all(dron.start == dron.target for dron, _ in self.line_sim):
+                if tdron is not None:
+                    self.line_sim.append([tdron, tdron.target])
+                elif all(
+                    tdron.start == tdron.target for tdron, _ in self.line_sim
+                ):
                     self.flag = False
                     continue
                 self.drone_fly(screen, screen_background, zone_list)
-

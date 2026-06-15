@@ -19,7 +19,7 @@ class zone_factory():
         self.xy: list[int]
         self.start_hub: str = start_hub
         self.end_hub: str = end_hub
-        self.link: list = []
+        self.link: list[Any] = []
         self.previous: list[Any] = []
         self.type: str = type
         self.color: Any = "black"
@@ -52,7 +52,7 @@ class drone_factory():
             drone_radius: int = 15,
             place: Optional[pygame.Vector2] = None,
             direction: Optional[pygame.Vector2] = None,
-            target: Optional[pygame.Vector2] = None 
+            target: Optional[pygame.Vector2] = None
             ) -> None:
         self.drone_id = drone_id
         self.flyng = flyng
