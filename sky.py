@@ -224,6 +224,9 @@ class sky():
                     dron.place = dron.start
             except (TypeError, IndexError):
                 return
+        for i in range(0, len(self.line_sim) - 1):
+            if self.line_sim[i][0].start == pygame.Vector2(*zone_list[-1].xy):
+                self.line_sim.pop(i)
         while self.running == "fly":
             self.keyboard_input()
             try:
@@ -231,7 +234,6 @@ class sky():
                 turn = []
                 for dron, _ in self.line_sim:
                     dron.direction = dron.target - dron.place
-
                     self.drone_fly_draw(
                         dron, screen, dron.direction, dron.place
                         )
@@ -243,15 +245,12 @@ class sky():
                             dron.place + dron.direction * 1.8
                             )
                     else:
-                        if dron.flyng is True:
-                            turn.append(
-                                [dron.drone_id,
-                                    [int(dron.target[0]),
-                                        int(dron.target[1])]]
-                            )
+                        turn.append(
+                            [dron.drone_id,
+                                [int(dron.target[0]),
+                                    int(dron.target[1])]]
+                        )
                         dron.start = dron.target
-                        if dron.start == pygame.Vector2(*zone_list[-1].xy):
-                            dron.flyng = False
             except (ValueError, UnboundLocalError) as e:
                 print(e)
                 exit()
@@ -378,10 +377,8 @@ class sky():
         self.line_sim = []
         while self.running == "fly":
             self.keyboard_input()
-
             if self.flag is True:
                 tdron = next(iter_drone, None)
-
                 if tdron is not None:
                     self.line_sim.append([tdron, tdron.target])
                 elif all(
