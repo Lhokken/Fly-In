@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from typing import Any, Optional, Iterator
+from fly_error import Validation_graph as vl
 import pygame
 
 
@@ -68,60 +69,6 @@ class drone_factory():
                     str(self.drone_id + 1), True, "white"
                     )
 
-def validate_parts(parts: Any) -> bool:
-    temp = parts[0].replace(" ", "")
-    temp = temp.replace("-", "")
-    if len(temp) != len(parts[0]):
-        data_error("No \" \" or \"-\" in zones names")
-        return False
-    try:
-        _ = int(parts[1])
-        _ = int(parts[2])
-    except ValueError:
-        data_error("Coordinates must be integer > 0")
-        return False
-    return True
-
-def validate_conn(temp: list[str], hubs: dict[Any, Any]) -> bool:
-    zones = list(hubs.keys())
-    if temp[0] not in zones or temp[1].split(" ")[0] not in zones:
-        data_error("Connection to unknown zone")
-        return False
-
-    return True
-
-def validate_conn_dup(connections: list[Any]) -> bool:
-    for temp in connections:
-        rev = temp[::-1]
-        for conn in connections:
-            if conn == rev:
-                data_error("Error: duplicate connections")
-                return False
-    return True
-
-def data_error(message: str) -> None:
-    screen = pygame.display.set_mode((1000, 400))
-    title = pygame.Rect(10, 10, 980, 380)
-    offset_y = title.top + 80
-    pygame.draw.rect(screen, "gray", title, width=4)
-    text = pygame.font.SysFont("Arial", 35)
-    id_text = text.render(message, True, "gray")
-    text_rect = id_text.get_rect(midtop=(title.centerx, offset_y))
-    screen.blit(id_text, text_rect)
-    offset_y = offset_y + 180
-    id_text = text.render("Press C to continue", True, "gray")
-    text_rect = id_text.get_rect(midtop=(title.centerx, offset_y))
-    screen.blit(id_text, text_rect)
-    pygame.display.flip()
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_c]:
-            break
-
 def parse_input(input_file: str) -> dict[str, Any] | None:
     nb_drones = 0
     hubs = {}
@@ -142,7 +89,7 @@ def parse_input(input_file: str) -> dict[str, Any] | None:
                         if nb_drones < 1:
                             raise ValueError
                     except ValueError:
-                        data_error("Drone numbers must be an integer > 0")
+                        vl.data_error("Drone numbers must be an integer > 0")
                         return None
                 elif line.startswith(("start_hub:", "hub:", "end_hub:")):
                     if line.startswith("start_hub:"):
@@ -152,7 +99,7 @@ def parse_input(input_file: str) -> dict[str, Any] | None:
                     tipo, part = line.split(":", 1)
                     cuts = part[part.find("["):part.find("]")].replace("[", "")
                     parts = part.replace(cuts, "").split()
-                    if validate_parts(parts) is False:
+                    if vl.validate_parts(parts) is False:
                         return None
                     cut = cuts.split()
                     for elem in cut:
@@ -166,16 +113,16 @@ def parse_input(input_file: str) -> dict[str, Any] | None:
                 elif line.startswith(("connection:")):
                     tipo, partsk = line.split(":", 1)
                     conn = partsk.strip().split("-")
-                    if validate_conn(conn, hubs) is False:
+                    if vl.validate_conn(conn, hubs) is False:
                         return None
                     connections.append(tuple(conn))
         print(connections)
         if len(dup_check) != len(set(dup_check)):
-            data_error("No duplicate zones in the graph")
-        if validate_conn_dup(connections) is False:
+            vl.data_error("No duplicate zones in the graph")
+        if vl.validate_conn_dup(connections) is False:
             return None
         if start_hub != 1 or end_hub != 1:
-            data_error("Only one start_hub or end_hub")
+            vl.data_error("Only one start_hub or end_hub")
             return None
         result = {
             "drones": nb_drones, "hubs": hubs, "connections": connections

@@ -7,7 +7,8 @@ from sky import sky
 from fly_in import zone_factory
 from fly_in import connection_factory
 from fly_in import drone_factory
-from fly_in import parse_input, data_error
+from fly_in import parse_input
+from fly_error import Validation_graph as vl
 from fly_menu import menu
 
 
@@ -19,6 +20,7 @@ def connection_build(connections: list[Any]) -> list[Any]:
         if "[" in elem[1]:
             parse = elem[1].split()
             connection.name2 = parse[0]
+            vl.valid_conn_meta(parse[1])
             connection.max_link_capacity = (parse[1].split("=")[1]).strip("]")
         else:
             connection.name2 = elem[1]
