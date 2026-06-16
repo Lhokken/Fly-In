@@ -7,7 +7,7 @@ from sky import sky
 from fly_in import zone_factory
 from fly_in import connection_factory
 from fly_in import drone_factory
-from fly_in import parse_input
+from fly_in import parse_input, data_error
 from fly_menu import menu
 
 
@@ -49,27 +49,6 @@ def drone_build(drone_number: int) -> list[Any]:
     return drone_list
 
 
-def file_not_found() -> None:
-    screen = pygame.display.set_mode((800, 400))
-    title = pygame.Rect(10, 10, 780, 380)
-    pygame.draw.rect(screen, "gray", title, width=4)
-    text = pygame.font.SysFont("Arial", 35)
-    id_text = text.render(
-        "File not found - Press 'C' to continue", True, "gray"
-        )
-    text_rect = id_text.get_rect(center=title.center)
-    screen.blit(id_text, text_rect)
-    pygame.display.flip()
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_c]:
-            break
-
-
 def main() -> None:
 
     sky_menu = menu("maps")
@@ -80,8 +59,8 @@ def main() -> None:
         skypath.keyboard_input()
         sky_menu.menu_builder(skypath.width, skypath.height)
         sky_1 = parse_input(sky_menu.file_path)
-        if sky_1 is None or sky_1["drones"] == 0:
-            file_not_found()
+        if sky_1 is None:
+            continue
         elif skypath.running == "fly":
             skypath.sky_build(
                 zone_build(sky_1["hubs"]),
