@@ -32,7 +32,8 @@ class Validation_graph(Exception):
 
     @classmethod
     def validate_conn_dup(cls, connections: list[Any]) -> bool:
-        for temp in connections:
+        for t in connections:
+            temp = t[0]
             rev = temp[::-1]
             for conn in connections:
                 if conn == rev:
@@ -49,8 +50,8 @@ class Validation_graph(Exception):
 
     @classmethod
     def valid_conn_link(cls, max_link_cap: int) -> bool:
-        print("--", max_link_cap)
         if max_link_cap != "" and int(max_link_cap) < 0:
+            cls.data_error("Max link connections must be > 0")
             return False
         return True
 

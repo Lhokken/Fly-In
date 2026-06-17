@@ -32,16 +32,12 @@ from fly_menu import menu
 def connection_build(connections: list[Any]) -> list[Any]:
     connect_list = []
     for elem in connections:
+        print("<>", elem)
         connection = connection_factory()
-        connection.name1 = elem[0]
-        if "[" in elem[1]:
-            parse = elem[1].split()
-            connection.name2 = parse[0]
-            # if vl.valid_conn_meta(parse[1]) is False:
-            #     return []
-            connection.max_link_capacity = (parse[1].split("=")[1]).strip("]")
-        else:
-            connection.name2 = elem[1]
+        connection.name1 = elem[0][0]
+        connection.name2 = elem[0][1]
+        if len(elem) == 2:
+            connection.max_link_capacity = elem[1]
         connect_list.append(connection)
     return connect_list
 

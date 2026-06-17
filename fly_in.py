@@ -112,18 +112,21 @@ def parse_input(input_file: str) -> dict[str, Any] | None:
                     metadata = {}
                 elif line.startswith(("connection:")):
                     tipo, partsk = line.split(":", 1)
-                    print(partsk)
                     conns = partsk
-                    # if " " in partsk:
-                    #     conns, meta = partsk.strip().split(" ")
-                    conn = conns.strip().split("-")
-                        # max_cap = meta.replace("]", "").split("=", 1)
-                        # print(max_cap)
-                        # if vl.valid_conn_link(int(max_cap)) is False:
-                    
-                    if vl.validate_conn(conn, hubs) is False:
-                        return None
-                    connections.append(tuple(conn))
+                    if " " in partsk.strip():
+                        conns, meta = partsk.strip().split(" ")
+                        tipo, max_cap = meta.replace("]", "").split("=", 1)
+                        conn = conns.strip().split("-")
+                        if vl.valid_conn_link(int(max_cap)) is False:
+                            return None
+                        if vl.validate_conn(conn, hubs) is False:
+                            return None
+                        connections.append([conn, max_cap])
+                    else:
+                        conn = conns.strip().split("-")
+                        if vl.validate_conn(conn, hubs) is False:
+                            return None
+                        connections.append([conn, 1])
         if len(dup_check) != len(set(dup_check)):
             vl.data_error("No duplicate zones in the graph")
         if vl.validate_conn_dup(connections) is False:
