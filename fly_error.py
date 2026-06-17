@@ -50,7 +50,7 @@ class Validation_graph(Exception):
 
     @classmethod
     def valid_conn_link(cls, max_link_cap: int) -> bool:
-        if max_link_cap != "" and int(max_link_cap) < 0:
+        if max_link_cap != 0 and int(max_link_cap) < 0:
             cls.data_error("Max link connections must be > 0")
             return False
         return True
@@ -59,7 +59,8 @@ class Validation_graph(Exception):
     def validation_zone(cls, zone_list: list[Any]) -> bool:
         for zone in zone_list:
             if zone.priority not in (
-                'normal', 'blocked', 'restricted', 'priority'):
+                'normal', 'blocked', 'restricted', 'priority'
+            ):
                 cls.data_error("Unknown zone name")
                 return False
             if zone.max_drones is not None and int(zone.max_drones) < 0:

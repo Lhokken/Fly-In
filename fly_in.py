@@ -3,7 +3,6 @@
 from typing import Any, Optional, Iterator
 from fly_error import Validation_graph as vl
 import pygame
-import traceback
 
 
 class zone_factory():
@@ -70,6 +69,7 @@ class drone_factory():
                     str(self.drone_id + 1), True, "white"
                     )
 
+
 def parse_input(input_file: str) -> dict[str, Any] | None:
     nb_drones = 0
     hubs = {}
@@ -127,7 +127,7 @@ def parse_input(input_file: str) -> dict[str, Any] | None:
                         conn = conns.strip().split("-")
                         if vl.validate_conn(conn, hubs) is False:
                             return None
-                        connections.append([conn, 1])
+                        connections.append([conn, str(1)])
         if len(dup_check) != len(set(dup_check)):
             vl.data_error("No duplicate zones in the graph")
         if vl.validate_conn_dup(connections) is False:

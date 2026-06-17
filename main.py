@@ -11,34 +11,18 @@ from fly_in import parse_input
 from fly_error import Validation_graph as vl
 from fly_menu import menu
 
-# def connection_build(connections: list[Any]) -> list[Any]:
-#     connect_list = []
-#     for elem in connections:
-#         connection = connection_factory()
-#         connection.name1 = elem[0]
-#         if "[" in elem[1]:
-#             parse = elem[1].split()
-#             connection.name2 = parse[0]
-#             # if vl.valid_conn_meta(parse[1]) is False:
-#             #     return []
-#             connection.max_link_capacity = (parse[1].split("=")[1]).strip("]")
-#         else:
-#             connection.name2 = elem[1]
-#         connect_list.append(connection)
-#     return connect_list
 
-
-
-def connection_build(connections: list[Any]) -> list[Any]:
+def connection_build(connections: tuple[list[str], Any]) -> list[connection_factory]:
     connect_list = []
+    print("<>", connections)
     for elem in connections:
         connection = connection_factory()
         connection.name1 = elem[0][0]
         connection.name2 = elem[0][1]
         if len(elem) == 2:
-            connection.max_link_capacity = elem[1]
+            connection.max_link_capacity = int(elem[1])
         connect_list.append(connection)
-    return connect_list
+    return (connect_list)
 
 
 def zone_build(input_list: dict[str, list[Any]]) -> list[zone_factory]:
