@@ -11,6 +11,23 @@ from fly_in import parse_input
 from fly_error import Validation_graph as vl
 from fly_menu import menu
 
+# def connection_build(connections: list[Any]) -> list[Any]:
+#     connect_list = []
+#     for elem in connections:
+#         connection = connection_factory()
+#         connection.name1 = elem[0]
+#         if "[" in elem[1]:
+#             parse = elem[1].split()
+#             connection.name2 = parse[0]
+#             # if vl.valid_conn_meta(parse[1]) is False:
+#             #     return []
+#             connection.max_link_capacity = (parse[1].split("=")[1]).strip("]")
+#         else:
+#             connection.name2 = elem[1]
+#         connect_list.append(connection)
+#     return connect_list
+
+
 
 def connection_build(connections: list[Any]) -> list[Any]:
     connect_list = []
@@ -20,7 +37,8 @@ def connection_build(connections: list[Any]) -> list[Any]:
         if "[" in elem[1]:
             parse = elem[1].split()
             connection.name2 = parse[0]
-            vl.valid_conn_meta(parse[1])
+            # if vl.valid_conn_meta(parse[1]) is False:
+            #     return []
             connection.max_link_capacity = (parse[1].split("=")[1]).strip("]")
         else:
             connection.name2 = elem[1]
@@ -39,6 +57,8 @@ def zone_build(input_list: dict[str, list[Any]]) -> list[zone_factory]:
         zone.max_drones = value[3].get("max_drones")
         zone.priority = value[3].get("zone", "normal")
         zone_list.append(zone)
+    if vl.validation_zone(zone_list) is False:
+        return []
     return zone_list
 
 
@@ -61,6 +81,7 @@ def main() -> None:
         skypath.keyboard_input()
         sky_menu.menu_builder(skypath.width, skypath.height)
         sky_1 = parse_input(sky_menu.file_path)
+        skypath.graph_name = sky_menu.file_path
         if sky_1 is None:
             continue
         elif skypath.running == "fly":

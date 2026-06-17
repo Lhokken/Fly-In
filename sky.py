@@ -40,6 +40,7 @@ class sky():
             ) -> None:
         pygame.init()
         pygame.font.init()
+        self.graph_name: str = ""
         self.drone_list = drone_list
         self.line_sim = line_sim
         self.height = height
@@ -102,8 +103,8 @@ class sky():
         screen.fill(self.screen_color)
         text = pygame.font.SysFont("Impact", 32)
         id_text = text.render((
-            f"Drones: {str(dr_num)} >-< Priority: P "
-            ">-< Restricted: X >-< Blocked: B"
+            f"{self.graph_name}      Drones: {str(dr_num)}     Priority: P "
+            "    Restricted: X     Blocked: B"
             ), True, self.txt_color)
         screen.blit(id_text, (20, 20))
         for conn in connections:
@@ -360,6 +361,8 @@ class sky():
             ) -> None:
         pygame.init()
         pygame.font.init()
+        if connections == [] or zone_list == []:
+            return
         screen = pygame.display.set_mode((self.width, self.height))
         self.sky_zone_set(zone_list)
         screen_background = pygame.Surface((self.width, self.height))

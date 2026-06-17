@@ -4,7 +4,7 @@ from typing import Any
 import pygame
 
 
-class Validation_graph():
+class Validation_graph(Exception):
 
     @classmethod
     def validate_parts(cls, parts: Any) -> bool:
@@ -39,24 +39,32 @@ class Validation_graph():
                     cls.data_error("Error: duplicate connections")
                     return False
         return True
-    
+
     @classmethod
     def valid_conn_meta(cls, data: dict[Any, Any]) -> bool:
-        if data[0] == "[" and data[-1] == "]":
-            if " " in data:
-                cls.data_error("No spaces in connection names")
-                return False
-            elif "=" in data:
-                return True
-        cls.data_error("Syntax error")
-        return False
-    
-    @classmethod
-    def validation_zone(cls, zone: str) -> bool:
-        if zone in ['normal', 'blocked', 'restricted', 'priority']:
-            cls.data_error("Unknown zone name")
+        if data[0] == "[" and data[-1] == "]" and "=" in data:
             return True
+        cls.data_error("Syntax error in metadata")
         return False
+
+    @classmethod
+    def valid_conn_link(cls, max_link_cap: int) -> bool:
+        print("--", max_link_cap)
+        if max_link_cap != "" and int(max_link_cap) < 0:
+            return False
+        return True
+
+    @classmethod
+    def validation_zone(cls, zone_list: list[Any]) -> bool:
+        for zone in zone_list:
+            if zone.priority not in (
+                'normal', 'blocked', 'restricted', 'priority'):
+                cls.data_error("Unknown zone name")
+                return False
+            if zone.max_drones is not None and int(zone.max_drones) < 0:
+                cls.data_error("Max drones must be positive integer")
+                return False
+        return True
 
     @classmethod
     def data_error(cls, message: str) -> None:
