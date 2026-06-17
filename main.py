@@ -32,7 +32,6 @@ from fly_menu import menu
 def connection_build(connections: list[Any]) -> list[Any]:
     connect_list = []
     for elem in connections:
-        print("<>", elem)
         connection = connection_factory()
         connection.name1 = elem[0][0]
         connection.name2 = elem[0][1]

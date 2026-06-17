@@ -3,6 +3,7 @@
 from typing import Any, Optional, Iterator
 from fly_error import Validation_graph as vl
 import pygame
+import traceback
 
 
 class zone_factory():
@@ -138,6 +139,9 @@ def parse_input(input_file: str) -> dict[str, Any] | None:
             "drones": nb_drones, "hubs": hubs, "connections": connections
             }
         return result
-    except FileNotFoundError as e:
-        print(e)
+    except (Exception, FileNotFoundError) as e:
+        if e.__traceback__ is not None:
+            line_error = e.__traceback__.tb_lineno
+            error = f"Error in line: {line_error} - Origin: {e}"
+            vl.data_error(error)
         return None
