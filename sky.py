@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-from typing import Any
+from typing import Any, Iterator
 from collections.abc import Generator
 import pygame
 from fly_in import zone_factory as zone
 from fly_in import drone_factory as drone
 from fly_in import connection_factory as connections
+
 
 color_set = {
     "white",
@@ -156,11 +157,12 @@ class sky():
                     screen.blit(id_text, (zon.xy[0] - 20, zon.xy[1] - 40))
                 except TypeError as e:
                     print(e)
-            id_text = text.render(str(zon.max_drones), True, "black")
-            try:
-                screen.blit(id_text, (zon.xy[0] - 15, zon.xy[1] - 5))
-            except TypeError as e:
-                print(e)
+            if zon.max_drones is not None:
+                id_text = text.render(str(zon.max_drones), True, "black")
+                try:
+                    screen.blit(id_text, (zon.xy[0] - 15, zon.xy[1] - 5))
+                except TypeError as e:
+                    print(e)
             if zon.priority == "priority":
                 id_text = text.render("P", True, "black")
                 screen.blit(id_text, (zon.xy[0] + 5, zon.xy[1] - 15))
@@ -258,7 +260,7 @@ class sky():
                 for dron, _ in self.line_sim:
                     new_target = next(dron.way, None)
                     if new_target is not None:
-                        dron.target = pygame.Vector2(new_target)
+                        dron.target = pygame.Vector2(new_target.xy)
                 self.turn_print(turn, zone_list)
                 break
 
@@ -284,21 +286,25 @@ class sky():
             cost = 1
         return cost
 
+    def set_drone_speed(self, dron: drone, connections: list[connections]) -> None:
+        
+        pass
+
     def path_finder(
             self,
             zone_list: list[zone],
             connections: list[connections]
-            ) -> list[Any]:
-        curr_hub: list[Any] = []
-        temp_hub: list[Any] = []
-        path: list[Any] = []
+            ) -> list[zone]:
+        curr_hub: list[zone] = []
+        temp_hub: list[zone] = []
+        path: list[zone] = []
         # normal: Standard zone with cost 1 (default)
         # blocked: Inaccessible zone. Any path using it is invalid.
         # restricted: A sensitive or dangerous zone. Costs 2.
         # priority: A preferred zone. Costs 1 turn but is prioritized.
         self.zone_connections(zone_list, connections)
         curr_hub.append(zone_list[0])
-        curr_hub[0].check = "visited"
+        curr_hub[0].checked = False
         curr_hub[0].cost = 0
         check = True
         while check:
@@ -317,16 +323,16 @@ class sky():
                                 zon.checked = True
                                 temp_hub.append(zon)
                             elif zon.priority == "restricted":
-                                if zon.pause is True:
+                                # if zon.pause is True:
                                     zon.previous = conn[0]
                                     zon.cost = 1 + hub.cost
                                     zon.checked = True
                                     zon.pause = False
                                     temp_hub.append(zon)
-                                elif zon.pause is False:
-                                    zon.cost = 1 + hub.cost
-                                    zon.pause = True
-                                    temp_hub.append(hub)
+                                # elif zon.pause is False:
+                                #     zon.cost = 1 + hub.cost
+                                #     zon.pause = True
+                                #     temp_hub.append(hub)
                             else:
                                 zon.previous = conn[0]
                                 zon.cost = 1 + hub.cost
@@ -342,13 +348,13 @@ class sky():
                 )
                 }
         curr = zone_list[-1]
-        path.append(curr.xy)
+        path.append(curr)
         while True:
             next = zone_dict.get(str(curr.previous))
             if next is None:
-                path.append(zone_list[0].xy)
+                path.append(zone_list[0])
                 break
-            path.append(next.xy)
+            path.append(next)
             curr = next
         return path[::-1]
 
@@ -369,6 +375,7 @@ class sky():
             zone_list, screen_background, connections, len(drone_list)
             )
         hub_list = self.path_finder(zone_list, connections)
+
         self.drone_list = drone_list
         iter_drone = iter(self.drone_list)
         self.flag = True
@@ -378,8 +385,9 @@ class sky():
             if self.flag is True:
                 tdron = next(iter_drone, None)
                 if tdron is not None:
-                    tdron.start = pygame.Vector2(*hub_list[0])
-                    tdron.target = pygame.Vector2(*hub_list[1])
+                    tdron.start = pygame.Vector2(*(hub_list[0].xy))
+                    tdron.target = pygame.Vector2(*(hub_list[1].xy))
+                    self.set_drone_speed(tdron, connections)
                     tdron.way = iter(hub_list[2:])
                     self.line_sim.append([tdron, tdron.target])
                 elif all(
