@@ -211,7 +211,6 @@ class sky():
                 if coor == zon.xy:
                     result.append([id + 1, zon.name])
         print(result)
-        print("------------")
 
     def drone_fly(
             self,
@@ -371,10 +370,6 @@ class sky():
             )
         hub_list = self.path_finder(zone_list, connections)
         self.drone_list = drone_list
-        for dron in self.drone_list:
-            dron.start = pygame.Vector2(*hub_list[0])
-            dron.target = pygame.Vector2(*hub_list[1])
-            dron.way = iter(hub_list[2:])
         iter_drone = iter(self.drone_list)
         self.flag = True
         self.line_sim = []
@@ -383,6 +378,9 @@ class sky():
             if self.flag is True:
                 tdron = next(iter_drone, None)
                 if tdron is not None:
+                    tdron.start = pygame.Vector2(*hub_list[0])
+                    tdron.target = pygame.Vector2(*hub_list[1])
+                    tdron.way = iter(hub_list[2:])
                     self.line_sim.append([tdron, tdron.target])
                 elif all(
                     tdron.start == tdron.target for tdron, _ in self.line_sim
