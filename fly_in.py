@@ -71,6 +71,15 @@ class drone_factory():
                     str(self.drone_id + 1), True, "white"
                     )
 
+def get_connection_cost(
+        zone1: str,
+        zone2: str,
+        conn_list: list[connection_factory]
+        ) -> int:
+    for conn in conn_list:
+        if conn.name1 == zone1 and conn.name2 == zone2:
+            return conn.max_link_capacity
+    return 0
 
 def parse_input(input_file: str) -> dict[str, Any] | None:
     nb_drones = 0
