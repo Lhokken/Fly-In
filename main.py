@@ -43,7 +43,7 @@ def zone_build(input_list: dict[str, list[Any]]) -> list[zone_factory]:
 def drone_build(drone_number: int) -> list[Any]:
     drone_list = []
     for i in range(0, drone_number):
-        drone = drone_factory(i)
+        drone = drone_factory(i, None, None)
         drone.drone_id = i
         drone_list.append(drone)
     return drone_list

@@ -32,7 +32,7 @@ class sky():
     def __init__(
             self,
             drone_list: list[drone] = [],
-            line_sim: list[Any] = [],
+            line_sim: list[drone] = [],
             prox_max: int = 0,
             height: int = 900,
             widht: int = 1900,
@@ -221,13 +221,13 @@ class sky():
         idx = len(self.line_sim)
         temp = []
         for i in range(0, idx):
-            if self.line_sim[i][0].start != goal:
+            if self.line_sim[i].start != goal:
                 temp.append(self.line_sim[i])
         self.line_sim = temp
 
     def drone_prox_chk(self, dron: drone) -> bool:
         for elem in self.line_sim:
-            if elem[0].start == dron.start:
+            if elem.start == dron.start:
                 self.prox_max += 1
         if self.prox_max > 1:
             return True
@@ -237,9 +237,10 @@ class sky():
             self,
             screen: pygame.surface.Surface,
             screen_background: pygame.surface.Surface,
-            zone_list: list[zone]
+            zone_list: list[zone],
+            connections: list[connections]
             ) -> None:
-        for dron, _ in self.line_sim:
+        for dron in self.line_sim:
             try:
                 if dron.start is not None:
                     dron.place = dron.start
@@ -253,43 +254,57 @@ class sky():
                 screen.blit(screen_background, (0, 0))
                 turn = []
                 shift = 0
-                for dron, _ in self.line_sim:
+                for dron in self.line_sim:
+                    
 
-                    fly_in.get_connection_cost
-
-
-
-
-                    dron.direction = dron.target - dron.place
+                    if dron.zon_cur is not None and dron.zon_nex is not None:
+                        conn_curr = fly_in.get_connection_cost(
+                            dron.zon_cur.name,
+                            dron.zon_nex.name,
+                            connections
+                            )
+                     
+                        conn_curr.traffic += 1
+                #     print("<>zone conn cost<>",
+                #         conn_curr.name1, conn_curr.name2,
+                #         conn_curr.max_link_capacity)
+                #     print("<>zone max drones<>",
+                #         zone_curr.name, zone_curr.max_drones)
+                    if dron.target is not None and dron.place is not None:
+                        dron.direction = dron.target - dron.place
                     self.prox_max = 0
                     if self.drone_prox_chk(dron):
                         shift = ((shift - (self.prox_max * 10)) % (self.prox_max * 40))
                     else:
                         shift = 30
-                    self.drone_fly_draw(
-                        dron, screen, dron.direction, dron.place, shift - 30
-                        )
-                pygame.display.flip()
-                for dron, _ in self.line_sim:
-                    if dron.direction.length() > 1:
-                        dron.direction = dron.direction.normalize()
-                        dron.place = pygame.Vector2(
-                            dron.place + dron.direction * 1.8
+                    if dron.direction is not None and dron.place is not None:
+                        self.drone_fly_draw(
+                            dron, screen, dron.direction, dron.place, shift - 30
                             )
-                    else:
-                        turn.append(
-                            [dron.drone_id,
-                                [int(dron.target[0]),
-                                    int(dron.target[1])]]
-                        )
-                        dron.start = dron.target
+                pygame.display.flip()
+                for dron in self.line_sim:
+                    if dron.direction is not None and dron.place is not None:
+                        if dron.direction.length() > 1:
+                            dron.direction = dron.direction.normalize()
+                            dron.place = pygame.Vector2(
+                                dron.place + dron.direction * 1.8
+                                )
+                        elif dron.target is not None:
+                            turn.append(
+                                [dron.drone_id,
+                                    [int(dron.target[0]),
+                                        int(dron.target[1])]]
+                            )
+                            dron.start = dron.target
             except (ValueError, UnboundLocalError) as e:
                 print(e)
                 exit()
-            if all(dron.start == dron.target for dron, _ in self.line_sim):
-                for dron, _ in self.line_sim:
+            if all(dron.start == dron.target for dron in self.line_sim):
+                for dron in self.line_sim:
                     new_target = next(dron.way, None)
                     if new_target is not None:
+                        dron.zon_cur = dron.zon_nex
+                        dron.zon_nex = new_target
                         dron.target = pygame.Vector2(new_target.xy)
                 self.turn_print(turn, zone_list)
                 break
@@ -406,8 +421,16 @@ class sky():
             zone_list, screen_background, connections, len(drone_list)
             )
         hub_list = self.path_finder(zone_list, connections)
-        start_cap = fly_in.get_connection_cost(hub_list[0].name, hub_list[1].name, connections)
+
+        start_cap = 0
+        start_con = (fly_in.get_connection_cost(
+            hub_list[0].name, hub_list[1].name, connections)
+            )
+        if start_con is not None:
+            start_cap = start_con.max_link_capacity
+
         print("<>", start_cap)
+
         self.drone_list = drone_list
         iter_drone = iter(self.drone_list)
         self.flag = True
@@ -421,13 +444,16 @@ class sky():
                     if tdron is not None:
                         tdron.start = pygame.Vector2(*(hub_list[0].xy))
                         tdron.target = pygame.Vector2(*(hub_list[1].xy))
+                        tdron.zon_cur = hub_list[0]
+                        tdron.zon_nex = hub_list[1]
+                        tdron.nex_zone = hub_list[1]
                         self.set_drone_speed(tdron, connections)
                         tdron.way = iter(hub_list[2:])
-                        self.line_sim.append([tdron, tdron.target])
+                        self.line_sim.append(tdron)
                     elif all(
-                        tdron.start == tdron.target for tdron, _ in self.line_sim
+                        txdron.start == txdron.target for txdron in self.line_sim
                     ):
                         self.flag = False
                     continue
 
-                self.drone_fly(screen, screen_background, zone_list)
+                self.drone_fly(screen, screen_background, zone_list, connections)

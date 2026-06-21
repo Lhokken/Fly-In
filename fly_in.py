@@ -40,13 +40,15 @@ class connection_factory():
         self.xy2: list[int]
         self.max_link_capacity: int = 1
         self.park: list[float]
+        self.traffic: int = 0
 
 
 class drone_factory():
     def __init__(
             self,
             drone_id: int,
-            d_speed: int = 1,
+            zon_cur: zone_factory | None,
+            zon_nex: zone_factory | None,
             flyng: bool = True,
             start: Optional[pygame.Vector2] = None,
             way: Iterator[zone_factory] = iter([]),
@@ -56,8 +58,10 @@ class drone_factory():
             direction: Optional[pygame.Vector2] = None,
             target: Optional[pygame.Vector2] = None
             ) -> None:
+        self.zon_cur = zon_cur
+        self.zon_nex = zon_nex
         self.drone_id = drone_id
-        self.d_speed = d_speed
+        self.nex_zone: zone_factory
         self.flyng = flyng
         self.start = start
         self.way = way
@@ -71,15 +75,23 @@ class drone_factory():
                     str(self.drone_id + 1), True, "white"
                     )
 
+
+def get_zone_slot(coord: tuple[int, int], zone_list) -> zone_factory | None:
+    for zone in zone_list:
+        if tuple(zone.xy) == coord:
+            return zone
+    return None
+
 def get_connection_cost(
         zone1: str,
         zone2: str,
         conn_list: list[connection_factory]
-        ) -> int:
+        ) -> connection_factory:
     for conn in conn_list:
         if conn.name1 == zone1 and conn.name2 == zone2:
-            return conn.max_link_capacity
-    return 0
+            if conn is not None:
+                return conn
+    return conn_list[0]
 
 def parse_input(input_file: str) -> dict[str, Any] | None:
     nb_drones = 0
