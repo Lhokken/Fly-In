@@ -38,7 +38,7 @@ class connection_factory():
         self.name2: str = ""
         self.xy1: list[int]
         self.xy2: list[int]
-        self.max_link_capacity: int = 1
+        self.max_link_capacity: int = 50
         self.park: list[float]
         self.traffic: int = 0
 
