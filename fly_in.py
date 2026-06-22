@@ -25,11 +25,13 @@ class zone_factory():
         self.type: str = type
         self.color: Any = "black"
         self.cost: int = 50000
-        self.radius: int = radius
-        self.max_drones: int = max_drones
+        self.radius = radius
+        self.max_drones = max_drones
         self.priority: str = priority
         self.checked: bool = False
         self.pause: bool = False
+        self.dr_num: int = 0
+        self.traffic: int = 0
 
 
 class connection_factory():
@@ -41,6 +43,7 @@ class connection_factory():
         self.max_link_capacity: int = 50
         self.park: list[float]
         self.traffic: int = 0
+        self.full: bool = False
 
 
 class drone_factory():
