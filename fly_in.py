@@ -64,7 +64,6 @@ class drone_factory():
         self.zon_cur = zon_cur
         self.zon_nex = zon_nex
         self.drone_id = drone_id
-        self.nex_zone: zone_factory
         self.flyng = flyng
         self.start = start
         self.way = way
@@ -85,7 +84,7 @@ def get_zone_slot(coord: tuple[int, int], zone_list) -> zone_factory | None:
             return zone
     return None
 
-def get_connection_cost(
+def get_connection(
         zone1: str,
         zone2: str,
         conn_list: list[connection_factory]

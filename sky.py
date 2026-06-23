@@ -265,33 +265,6 @@ class sky():
                 return
         self.drone_park(pygame.Vector2(*zone_list[-1].xy))
 
-        for conn in connections:
-            conn.traffic = 0
-        for zone in zone_list:
-            zone.traffic = 0
-
-        for dron in self.line_sim:
-            if dron.zon_cur is not None and dron.zon_nex is not None:
-                conn_curr = fly_in.get_connection_cost(
-                    dron.zon_cur.name,
-                    dron.zon_nex.name,
-                    connections
-                    )
-                conn_curr.traffic += 1
-                dron.zon_cur.dr_num += 1
-                if conn_curr.traffic > conn_curr.max_link_capacity:
-                    # conn_curr.full = True
-                    # if not self.alternative_path_search(
-                    #     dron, zone_list, connections, dron.zon_cur):
-                    #         dron.flyng = False
-                    dron.flyng = False
-
-            if dron.zon_nex is not None and dron.zon_nex.max_drones is not None:
-                dron.zon_nex.traffic += 1
-                if dron.zon_nex.traffic > int(dron.zon_nex.max_drones):
-                    dron.flyng = False
-
-
         while self.running == "fly":
             self.keyboard_input()
             try:
@@ -332,16 +305,20 @@ class sky():
                 print(e)
                 exit()
             if all(dron.start == dron.target for dron in self.line_sim if dron.flyng):
+
                 for dron in self.line_sim:
-                    if dron.flyng:
+                    if dron.flyng and dron.zon_nex is not None:
                         new_target = next(dron.way, None)
                         if new_target is not None:
                             dron.target = pygame.Vector2(new_target.xy)
                         dron.zon_cur = dron.zon_nex
+                        dron.zon_nex.traffic = 0
                         dron.zon_nex = new_target
                     else:    
                         dron.flyng = True
 
+                for conn in connections:
+                    conn.traffic = 0
                 self.turn_print(turn, zone_list)
                 break
 
@@ -441,6 +418,22 @@ class sky():
             conn.full = False
         return path[::-1]
 
+    def traffic_ruler(
+            self,
+            start: zone,
+            target: zone,
+            connection: list[connections]
+            ) -> int:
+        curr_conn = (fly_in.get_connection(
+            start.name, target.name, connection)
+            )
+        if target.max_drones is not None:
+            if int(target.max_drones) < curr_conn.max_link_capacity:
+                return int(target.max_drones)
+        if curr_conn is not None:
+            return curr_conn.max_link_capacity
+        return 5000
+
     def sky_build(
             self,
             zone_list: list[zone],
@@ -459,13 +452,6 @@ class sky():
             )
         hub_list = self.path_finder(zone_list, connections, zone_list[0])
 
-        start_cap = 0
-        start_con = (fly_in.get_connection_cost(
-            hub_list[0].name, hub_list[1].name, connections)
-            )
-        if start_con is not None:
-            start_cap = start_con.max_link_capacity
-
         self.drone_list = drone_list
         iter_drone = iter(self.drone_list)
         self.flag = True
@@ -473,7 +459,7 @@ class sky():
         while self.running == "fly":
             self.keyboard_input()
             if self.flag is True:
-                for _ in range(0, start_cap):
+                for _ in range(0, self.traffic_ruler(hub_list[0], hub_list[1], connections)):
                     tdron = next(iter_drone, None)
                     hub_list = self.path_finder(zone_list, connections, zone_list[0])
                     if tdron is not None:
@@ -481,13 +467,28 @@ class sky():
                         tdron.target = pygame.Vector2(*(hub_list[1].xy))
                         tdron.zon_cur = hub_list[0]
                         tdron.zon_nex = hub_list[1]
-                        tdron.nex_zone = hub_list[1]
                         tdron.way = iter(hub_list[2:])
                         self.line_sim.append(tdron)
-                    elif all(
-                        txdron.start == txdron.target for txdron in self.line_sim
-                    ):
+                    elif self.line_sim == []:
                         self.flag = False
                     continue
 
+                print("test")
+                for dron in self.line_sim:
+                    if dron.zon_nex is not None and dron.zon_cur is not None:
+                        curr_conn = (fly_in.get_connection(
+                            dron.zon_cur.name, dron.zon_nex.name, connections)
+                            )
+                        curr_conn.traffic += 1
+                        if curr_conn.traffic > curr_conn.max_link_capacity:
+                            dron.flyng = False
+
+                for dron in self.line_sim:
+                    if dron.zon_nex is not None:
+                        if dron.zon_nex.max_drones is not None:
+                            if dron.zon_nex.traffic > int(dron.zon_nex.max_drones):
+                                dron.flyng = False
+                            else:
+                                dron.zon_nex.traffic += 1
+    
                 self.drone_fly(screen, screen_background, zone_list, connections)
