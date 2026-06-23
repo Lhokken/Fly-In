@@ -241,12 +241,16 @@ class sky():
             start: zone
             ) -> bool:
         new_path = self.path_finder(zone_list, connection, start)
+        
+        if new_path == []:
+            return False
         if new_path[-1].type != "end_hub":
             return False
         idx = 0
         if start in new_path:
             idx = new_path.index(start)
         dron.way = iter(new_path[idx:])
+        print("test", dron.way)
         dron.target = pygame.Vector2(next(dron.way).xy)
         return True
 
@@ -362,7 +366,11 @@ class sky():
         curr_hub[0].checked = False
         curr_hub[0].cost = 0
         check = True
+        counter = 0
         while check:
+            counter += 1
+            if counter > (len(zone_list) * 10):
+                return []
             for hub in curr_hub:
                 if hub.type == "end_hub":
                     check = False
@@ -473,7 +481,6 @@ class sky():
                         self.flag = False
                     continue
 
-                print("test")
                 for dron in self.line_sim:
                     if dron.zon_nex is not None and dron.zon_cur is not None:
                         curr_conn = (fly_in.get_connection(
@@ -481,7 +488,11 @@ class sky():
                             )
                         curr_conn.traffic += 1
                         if curr_conn.traffic > curr_conn.max_link_capacity:
-                            dron.flyng = False
+                            # curr_conn.full = True   genera errore
+                            if not self.alternative_path_search(
+                                dron, zone_list, connections, dron.zon_cur):
+                                dron.flyng = False
+                                curr_conn.full = False
 
                 for dron in self.line_sim:
                     if dron.zon_nex is not None:
