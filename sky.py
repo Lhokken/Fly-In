@@ -20,6 +20,9 @@ color_set = {
 
 
 def ft_color_randomizer() -> Generator[str]:
+    """Simple color random generator, used only by
+    impossible_goal because it has color = rainbow
+    """
     while True:
         for color in color_set:
             yield(color)
@@ -29,6 +32,10 @@ color_randomizer = ft_color_randomizer()
 
 
 class sky():
+    """This is the class that represent the map, sky, whatever
+    you think is best where drones move along connections between
+    zones, from start to end.
+    """
     def __init__(
             self,
             drone_list: list[drone] = [],
@@ -56,6 +63,11 @@ class sky():
         self.running = running
 
     def sky_zone_set(self, zone_list: list[zone]) -> None:
+        """This analize zone coordinates for each zone in
+        zone list, find max and min then calculate new coordinates
+        in pixel in order to place each zon in the correct place in
+        the windows. This method respect windows dimension in pixels
+        """
         x_max = 0
         y_max = 0
         x_min = 0
@@ -103,6 +115,10 @@ class sky():
             connections: list[connections],
             dr_num: int
             ) -> None:
+        """This method use pygame to draw the real graph on the given window,
+        place zones and connection with relevant data near. Max link
+        connections is printed in the midle of the line.
+        """
         screen.fill(self.screen_color)
         text = pygame.font.SysFont("Impact", 32)
         id_text = text.render((
@@ -179,10 +195,14 @@ class sky():
             self,
             dron: drone,
             screen: pygame.surface.Surface,
-            direction: pygame.Vector2,
-            place: pygame.Vector2,
-            shift
+            direction: pygame.math.Vector2,
+            place: pygame.math.Vector2,
+            shift: int
             ) -> None:
+        """Draw the circle of the drone, it's id and the right color
+        on the screen surface, but it do not appera on the monitor
+        at this time.
+        but """
         enlarger = 0
         if direction.length() < 65 and direction.length() > 15:
             enlarger = 10
@@ -197,6 +217,9 @@ class sky():
         screen.blit(dron.id_rend, position)
 
     def keyboard_input(self: "sky") -> None:
+        """Th only purpose is to get keyboard input and assign in
+        the right place.
+        """
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = "quit"
@@ -210,6 +233,9 @@ class sky():
             self.running = "quit"
 
     def turn_print(self, turn: list[Any], zone_list: list[zone]) -> None:
+        """The only purpose is to print in the terminal
+        each line turn
+        """
         result = []
         for id, coor in turn:
             for zon in zone_list:
@@ -218,7 +244,10 @@ class sky():
         if result != []:
             print(result)
 
-    def drone_park(self, goal: pygame.Vector2) -> None:
+    def drone_park(self, goal: pygame.math.Vector2) -> None:
+        """This method simpy get the drone out of the screen
+        when it arrive on the goal zone
+        """
         idx = len(self.line_sim)
         temp = []
         for i in range(0, idx):
@@ -227,6 +256,10 @@ class sky():
         self.line_sim = temp
 
     def drone_prox_chk(self, dron: drone) -> bool:
+        """This method calculate how many drone occupy
+        th same point on the screen, in order to move them
+        a little and make clear how many they are
+        """
         for elem in self.line_sim:
             if elem.start == dron.start:
                 self.prox_max += 1
@@ -241,6 +274,10 @@ class sky():
             connection: list[connections],
             start: zone
             ) -> bool:
+        """This method is called when a drone find a restriction in
+        a connection, and change the drone path if a new one not
+        longer has been found. Otherwise it return False.
+        """
         new_path = self.path_finder(zone_list, connection, start)
         if len(new_path) > dron.len_way:
             return False
@@ -252,18 +289,27 @@ class sky():
         if start in new_path:
             idx = new_path.index(start)
 
-        dron.way = iter(new_path[idx + 1:])
+        dron.way = iter(tuple(new_path[idx + 1:]))
         dron.zon_nex = next(dron.way)
-        print("<>", dron.zon_nex.name)
-        dron.target = pygame.Vector2(dron.zon_nex.xy)
+
+        dron.target = pygame.math.Vector2(
+            float(dron.zon_nex.xy[0]), float(dron.zon_nex.xy[1])
+            )
         return True
 
     def next_turn(self) -> None:
+        """This method change parameters for the next turn, giving
+        drones the next target and next start.
+        It also set to zero zone traffic parameter
+        """
         for dron in self.line_sim:
             if dron.flyng and dron.zon_nex is not None:
                 new_target = next(dron.way, None)
                 if new_target is not None:
-                    dron.target = pygame.Vector2(new_target.xy)
+                    dron.target = pygame.math.Vector2(
+                        float(new_target.xy[0]),
+                        float(new_target.xy[1])
+                        )
                 dron.zon_cur = dron.zon_nex
                 dron.zon_nex.traffic = 0
                 dron.zon_nex = new_target
@@ -277,13 +323,16 @@ class sky():
             zone_list: list[zone],
             connections: list[connections]
             ) -> None:
+        """This is a very long method, it read the list of flying
+        drones and make them graphically move from a zone to the next.
+        """
         for dron in self.line_sim:
             try:
                 if dron.start is not None:
                     dron.place = dron.start
             except (TypeError, IndexError):
                 return
-        self.drone_park(pygame.Vector2(*zone_list[-1].xy))
+        self.drone_park(pygame.math.Vector2(*zone_list[-1].xy))
 
         while self.running == "fly":
             self.keyboard_input()
@@ -320,8 +369,8 @@ class sky():
                             and dron.place is not None and dron.flyng:
                         if dron.direction.length() > 1:
                             dron.direction = dron.direction.normalize()
-                            dron.place = pygame.Vector2(
-                                dron.place + dron.direction * 1.1
+                            dron.place = pygame.math.Vector2(
+                                dron.place + dron.direction * 1.7
                                 )
                         elif dron.target is not None and dron.flyng:
                             turn.append(
@@ -411,11 +460,9 @@ class sky():
                                     zon.checked = True
                                     zon.pause = False
                                     temp_hub.append(zon)
-                                    # print("temp_hub.append", zon)
                                 elif zon.pause is False:
                                     zon.pause = True
                                     temp_hub.append(hub)
-                                    # print("temp_hub.append", hub)
                             else:
                                 zon.previous = conn[0]
                                 zon.cost = 1 + hub.cost
@@ -466,9 +513,13 @@ class sky():
             tdron: drone | None,
             hub_list: list[zone]
             ) -> None:
+        """This method set starting parameters to drones just
+        leaving start zone. Then it append the new drone/drones
+        to self.line_sim
+        """
         if tdron is not None:
-            tdron.start = pygame.Vector2(*(hub_list[0].xy))
-            tdron.target = pygame.Vector2(*(hub_list[1].xy))
+            tdron.start = pygame.math.Vector2(*(hub_list[0].xy))
+            tdron.target = pygame.math.Vector2(*(hub_list[1].xy))
             tdron.zon_cur = hub_list[0]
             tdron.zon_nex = hub_list[1]
             tdron.len_way = len(hub_list)
@@ -483,6 +534,11 @@ class sky():
             drone_list: list[drone],
             connections: list[connections]
             ) -> None:
+        """This inizialize some parameters, such as screen and background.
+        It also let multiple drone leave togheter if it's possible,
+        and launch alternative path if a drone find a restricted way.
+        Last this method let a drone wait if there is no space left to move on.
+        """
         pygame.init()
         pygame.font.init()
         if connections == [] or zone_list == []:
@@ -516,9 +572,7 @@ class sky():
                             )
                         curr_conn.traffic += 1
                         if curr_conn.traffic > curr_conn.max_link_capacity:
-
                             dron.zon_cur.traffic += 1
-
                             curr_conn.full = True
                             if self.alternative_path_search(
                                     dron, zone_list, connections, dron.zon_cur

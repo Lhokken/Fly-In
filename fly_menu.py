@@ -24,6 +24,9 @@ class menu(sky):
         self.vert = 0
 
     def menu_file_mapping(self) -> None:
+        """Analize the given directory, searching txt files
+        in all subdirectories, creating a dictionary in self.index
+        """
         path = Path(self.input)
         files: list[str] = []
         index: dict[str, list[str]] = {}
@@ -35,6 +38,7 @@ class menu(sky):
         self.index = index
 
     def menu_builder(self, width: int, height: int) -> None:
+        """Create the concrete pygame interactive menu"""
         pygame.init()
         pygame.font.init()
         screen = pygame.display.set_mode((width, height))
@@ -116,6 +120,9 @@ class menu(sky):
             pygame.display.flip()
 
     def menu_zone_set(self, width: int, height: int) -> None:
+        """Calculate vertical and orizontal spanning in order to display
+        variable menu elements, it function with not too much elements
+        """
         x_max = 0
         y_max = 0
         x_max = len(self.index)

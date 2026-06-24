@@ -6,6 +6,7 @@ import pygame
 
 
 class zone_factory():
+    """The class with all parameters for zones."""
     def __init__(
             self,
             name: str = "",
@@ -35,6 +36,7 @@ class zone_factory():
 
 
 class connection_factory():
+    """The class with all parameters for connections."""
     def __init__(self) -> None:
         self.name1: str = ""
         self.name2: str = ""
@@ -47,19 +49,20 @@ class connection_factory():
 
 
 class drone_factory():
+    """The class with all parameters for drones."""
     def __init__(
             self,
             drone_id: int,
             zon_cur: zone_factory | None,
             zon_nex: zone_factory | None,
             flyng: bool = True,
-            start: Optional[pygame.Vector2] = None,
+            start: Optional[pygame.math.Vector2] = None,
             way: Iterator[zone_factory] = iter([]),
             drone_color: str = "brown",
             drone_radius: int = 15,
-            place: Optional[pygame.Vector2] = None,
-            direction: Optional[pygame.Vector2] = None,
-            target: Optional[pygame.Vector2] = None
+            place: Optional[pygame.math.Vector2] = None,
+            direction: Optional[pygame.math.Vector2] = None,
+            target: Optional[pygame.math.Vector2] = None
             ) -> None:
         self.zon_cur = zon_cur
         self.zon_nex = zon_nex
@@ -79,24 +82,41 @@ class drone_factory():
                     )
 
 
-def get_zone_slot(coord: tuple[int, int], zone_list) -> zone_factory | None:
+def get_zone_slot(
+        coord: tuple[int, int],
+        zone_list: list[zone_factory]
+        ) -> zone_factory | None:
+    """This method return a zone if it find a check in given
+    coordinats.
+    """
     for zone in zone_list:
         if tuple(zone.xy) == coord:
             return zone
     return None
+
 
 def get_connection(
         zone1: str,
         zone2: str,
         conn_list: list[connection_factory]
         ) -> connection_factory:
+    """This method return the correct connection if a correct
+    check has been found between given zones names and
+    the names of the coordinates.
+    """
     for conn in conn_list:
         if conn.name1 == zone1 and conn.name2 == zone2:
             if conn is not None:
                 return conn
     return conn_list[0]
 
+
 def parse_input(input_file: str) -> dict[str, Any] | None:
+    """This method read the given file, elaborate each line
+    and return a dictionary with zones, connections and drones.
+    It also call method from fly_error class to check for
+    sintax errors in the file.
+    """
     nb_drones = 0
     hubs = {}
     connections = []

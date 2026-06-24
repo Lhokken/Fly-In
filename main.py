@@ -12,7 +12,12 @@ from fly_error import Validation_graph as vl
 from fly_menu import menu
 
 
-def connection_build(connections: tuple[list[str], Any]) -> list[connection_factory]:
+def connection_build(
+        connections: tuple[list[str], Any]
+        ) -> list[connection_factory]:
+    """Build and return a list of connections between zones,
+    based on the selected map
+    """
     connect_list = []
     for elem in connections:
         connection = connection_factory()
@@ -25,6 +30,9 @@ def connection_build(connections: tuple[list[str], Any]) -> list[connection_fact
 
 
 def zone_build(input_list: dict[str, list[Any]]) -> list[zone_factory]:
+    """Build and return a list of map zones,
+    based on the selected map. Assign attributes values to each zones.
+    """
     zone_list = []
     for key, value in input_list.items():
         zone = zone_factory()
@@ -41,6 +49,9 @@ def zone_build(input_list: dict[str, list[Any]]) -> list[zone_factory]:
 
 
 def drone_build(drone_number: int) -> list[Any]:
+    """"Build and return a list with the right number of drones,
+    each with its unique identifier
+    """
     drone_list = []
     for i in range(0, drone_number):
         drone = drone_factory(i, None, None)

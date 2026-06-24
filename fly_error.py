@@ -8,6 +8,8 @@ class Validation_graph(Exception):
 
     @classmethod
     def validate_parts(cls, parts: Any) -> bool:
+        """Check for sintax errors in given text
+        """
         temp = parts[0].replace(" ", "")
         temp = temp.replace("-", "")
         if len(temp) != len(parts[0]):
@@ -23,6 +25,8 @@ class Validation_graph(Exception):
 
     @classmethod
     def validate_conn(cls, temp: list[str], hubs: dict[Any, Any]) -> bool:
+        """Check for sintax errors in given text
+        """
         zones = list(hubs.keys())
         if temp[0] not in zones or temp[1].split(" ")[0] not in zones:
             cls.data_error("Connection to unknown zone")
@@ -32,6 +36,8 @@ class Validation_graph(Exception):
 
     @classmethod
     def validate_conn_dup(cls, connections: list[Any]) -> bool:
+        """Check for sintax errors in given text
+        """
         for t in connections:
             temp = t[0]
             rev = temp[::-1]
@@ -43,6 +49,8 @@ class Validation_graph(Exception):
 
     @classmethod
     def valid_conn_meta(cls, data: dict[Any, Any]) -> bool:
+        """Check for sintax errors in given text
+        """
         if data[0] == "[" and data[-1] == "]" and "=" in data:
             return True
         cls.data_error("Syntax error in metadata")
@@ -50,6 +58,8 @@ class Validation_graph(Exception):
 
     @classmethod
     def valid_conn_link(cls, max_link_cap: int) -> bool:
+        """Check for sintax errors in given text
+        """
         if max_link_cap != 0 and int(max_link_cap) < 0:
             cls.data_error("Max link connections must be > 0")
             return False
@@ -57,11 +67,13 @@ class Validation_graph(Exception):
 
     @classmethod
     def validation_zone(cls, zone_list: list[Any]) -> bool:
+        """Check for sintax errors in given text
+        """
         for zone in zone_list:
             if zone.priority not in (
                 'normal', 'blocked', 'restricted', 'priority'
             ):
-                cls.data_error("Unknown zone name")
+                cls.data_error("Unknown priority name")
                 return False
             if zone.max_drones is not None and int(zone.max_drones) < 0:
                 cls.data_error("Max drones must be positive integer")
@@ -70,6 +82,8 @@ class Validation_graph(Exception):
 
     @classmethod
     def data_error(cls, message: str) -> None:
+        """Display the error in a black window.
+        """
         screen = pygame.display.set_mode((1000, 400))
         title = pygame.Rect(10, 10, 980, 380)
         offset_y = title.top + 80

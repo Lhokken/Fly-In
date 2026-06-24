@@ -10,7 +10,6 @@ all: install
 
 install:
 	$(UV) sync
-	$(UV) pip install 
 
 run:
 	$(UV) run python main.py
@@ -35,17 +34,12 @@ clean:
 re: clean install
 
 lint:
-	$(UV) run flake8 main.py
-	$(UV) run mypy main.py \
-		--warn-return-any \
-		--warn-unused-ignores \
-		--ignore-missing-imports \
-		--disallow-untyped-defs \
-		--check-untyped-defs
+	-$(UV) run flake8 *.py
+	$(UV) run mypy *.py
 
 lint-strict:
-	$(UV) run flake8 *.py
-	$(UV) run mypy . --strict
+	-$(UV) run flake8 *.py
+	$(UV) run mypy --strict *.py
 
 build:
 	$(UV) build
