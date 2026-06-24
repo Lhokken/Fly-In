@@ -64,6 +64,7 @@ class drone_factory():
         self.zon_cur = zon_cur
         self.zon_nex = zon_nex
         self.drone_id = drone_id
+        self.len_way: int = 0
         self.flyng = flyng
         self.start = start
         self.way = way

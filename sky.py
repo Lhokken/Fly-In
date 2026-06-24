@@ -241,7 +241,8 @@ class sky():
             start: zone
             ) -> bool:
         new_path = self.path_finder(zone_list, connection, start)
-        
+        if len(new_path) > dron.len_way:
+            return False
         if new_path == []:
             return False
         if new_path[-1].type != "end_hub":
@@ -296,7 +297,7 @@ class sky():
                         if dron.direction.length() > 1:
                             dron.direction = dron.direction.normalize()
                             dron.place = pygame.Vector2(
-                                dron.place + dron.direction * 1.8
+                                dron.place + dron.direction * 1.1
                                 )
                         elif dron.target is not None and dron.flyng:
                             turn.append(
@@ -370,6 +371,10 @@ class sky():
         while check:
             counter += 1
             if counter > (len(zone_list) * 10):
+                for zon in zone_list:
+                    zon.checked = False
+                for conn in connections:
+                    conn.full = False
                 return []
             for hub in curr_hub:
                 if hub.type == "end_hub":
@@ -475,6 +480,7 @@ class sky():
                         tdron.target = pygame.Vector2(*(hub_list[1].xy))
                         tdron.zon_cur = hub_list[0]
                         tdron.zon_nex = hub_list[1]
+                        tdron.len_way = len(hub_list)
                         tdron.way = iter(hub_list[2:])
                         self.line_sim.append(tdron)
                     elif self.line_sim == []:
@@ -488,16 +494,19 @@ class sky():
                             )
                         curr_conn.traffic += 1
                         if curr_conn.traffic > curr_conn.max_link_capacity:
-                            # curr_conn.full = True   genera errore
+                            dron.zon_cur.traffic += 1
+                            # dron.flyng = False
+                            curr_conn.full = True
                             if not self.alternative_path_search(
                                 dron, zone_list, connections, dron.zon_cur):
                                 dron.flyng = False
-                                curr_conn.full = False
+                            curr_conn.full = False
+                            
 
                 for dron in self.line_sim:
                     if dron.zon_nex is not None:
                         if dron.zon_nex.max_drones is not None:
-                            if dron.zon_nex.traffic > int(dron.zon_nex.max_drones):
+                            if dron.zon_nex.traffic >= int(dron.zon_nex.max_drones):
                                 dron.flyng = False
                             else:
                                 dron.zon_nex.traffic += 1
