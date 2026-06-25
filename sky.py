@@ -61,6 +61,7 @@ class sky():
         self.clock = pygame.time.Clock()
         self.flag = True
         self.running = running
+        self.turn: int = 1
 
     def sky_zone_set(self, zone_list: list[zone]) -> None:
         """This analize zone coordinates for each zone in
@@ -242,7 +243,8 @@ class sky():
                 if coor == zon.xy:
                     result.append([id + 1, zon.name])
         if result != []:
-            print(result)
+            print(f"{self.turn}: {result}")
+        self.turn += 1
 
     def drone_park(self, goal: pygame.math.Vector2) -> None:
         """This method simpy get the drone out of the screen
@@ -490,7 +492,42 @@ class sky():
             curr = next
         for conn in connections:
             conn.full = False
+        
         return path[::-1]
+
+    def refine_hub_list(self, path: list[zone]) -> list[zone]:
+        new_path: list[zone] = []
+
+        for zon in path:
+            if zon.priority != "restricted":
+                new_path.append(zon)
+            elif zon.priority == "restricted":
+                new_zone = zone()
+                new_zone.name = "virtual_zon"
+                new_zone.type = "normal"
+                new_zone.color = "white"
+                new_zone.max_drones = 50
+                new_zone.priority = "normal"
+                new_zone.radius = 0
+                new_zone.traffic = 0
+                new_zone.xy = [0, 0]
+                new_path.append(new_zone)
+                new_path.append(zon)
+            else:
+                print(zon.name, "Unexpected priority type")
+
+        for i in range(1, len(new_path[0:-1]) + 1):
+            if new_path[i].name == "virtual_zon":
+                print("test------------")
+                # new_conn1 = connections()
+                # new_conn1.name1 = zon.name
+                # new_conn1.name2 = new_path[i + 1].name
+                # new_conn1.max_link_capacity = 50
+                # new_conn2 = connections()
+                new_path[i].xy[0] = (new_path[i - 1].xy[0] + new_path[i + 1].xy[0]) // 2
+                new_path[i].xy[1] = (new_path[i - 1].xy[1] + new_path[i + 1].xy[1]) // 2
+                print("<coor>", i, new_path[i - 1].xy, new_path[i].xy, new_path[i + 1].xy)
+        return new_path
 
     def traffic_ruler(
             self,
@@ -517,6 +554,7 @@ class sky():
         leaving start zone. Then it append the new drone/drones
         to self.line_sim
         """
+        # hub_list = self.refine_hub_list(hub_list)
         if tdron is not None:
             tdron.start = pygame.math.Vector2(*(hub_list[0].xy))
             tdron.target = pygame.math.Vector2(*(hub_list[1].xy))
