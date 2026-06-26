@@ -31,7 +31,6 @@ class Validation_graph(Exception):
         if temp[0] not in zones or temp[1].split(" ")[0] not in zones:
             cls.data_error("Connection to unknown zone")
             return False
-
         return True
 
     @classmethod

@@ -41,5 +41,3 @@ lint-strict:
 	-$(UV) run flake8 *.py
 	$(UV) run mypy --strict *.py
 
-build:
-	$(UV) build

@@ -433,10 +433,6 @@ class sky():
         curr_hub: list[zone] = []
         temp_hub: list[zone] = []
         path: list[zone] = []
-        # normal: Standard zone with cost 1 (default)
-        # blocked: Inaccessible zone. Any path using it is invalid.
-        # restricted: A sensitive or dangerous zone. Costs 2.
-        # priority: A preferred zone. Costs 1 turn but is prioritized.
         curr_hub.append(first_zone)
         curr_hub[0].checked = False
         curr_hub[0].cost = 0
@@ -597,6 +593,7 @@ class sky():
         iter_drone = iter(self.drone_list)
         self.flag = True
         self.line_sim = []
+        self.turn = 1
         while self.running == "fly":
             self.keyboard_input()
             if self.flag is True:
