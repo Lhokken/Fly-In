@@ -280,6 +280,7 @@ class sky():
         a connection, and change the drone path if a new one not
         longer has been found. Otherwise it return False.
         """
+
         new_path = self.path_finder(zone_list, connection, start)
         if len(new_path) > dron.len_way:
             return False
@@ -427,7 +428,6 @@ class sky():
         # blocked: Inaccessible zone. Any path using it is invalid.
         # restricted: A sensitive or dangerous zone. Costs 2.
         # priority: A preferred zone. Costs 1 turn but is prioritized.
-        self.zone_connections(zone_list, connections)
         curr_hub.append(first_zone)
         curr_hub[0].checked = False
         curr_hub[0].cost = 0
@@ -483,8 +483,14 @@ class sky():
         path.append(curr)
         for zon in zone_list:
             zon.checked = False
+
+        counter = 0
         while True:
+            counter += 1
+            if counter > (len(zone_list) * 10):
+                break
             next = zone_dict.get(str(curr.previous))
+
             if next is None:
                 path.append(zone_list[0])
                 break
@@ -495,7 +501,7 @@ class sky():
         
         return path[::-1]
 
-    def refine_hub_list(self, path: list[zone]) -> list[zone]:
+    def refine_zone_list(self, path: list[zone]) -> list[zone]:
         new_path: list[zone] = []
 
         for zon in path:
@@ -508,7 +514,7 @@ class sky():
                 new_zone.color = "white"
                 new_zone.max_drones = 50
                 new_zone.priority = "normal"
-                new_zone.radius = 0
+                new_zone.radius = 9
                 new_zone.traffic = 0
                 new_zone.xy = [0, 0]
                 new_path.append(new_zone)
@@ -516,17 +522,15 @@ class sky():
             else:
                 print(zon.name, "Unexpected priority type")
 
+
+
+
         for i in range(1, len(new_path[0:-1]) + 1):
             if new_path[i].name == "virtual_zon":
-                print("test------------")
-                # new_conn1 = connections()
-                # new_conn1.name1 = zon.name
-                # new_conn1.name2 = new_path[i + 1].name
-                # new_conn1.max_link_capacity = 50
-                # new_conn2 = connections()
+
                 new_path[i].xy[0] = (new_path[i - 1].xy[0] + new_path[i + 1].xy[0]) // 2
                 new_path[i].xy[1] = (new_path[i - 1].xy[1] + new_path[i + 1].xy[1]) // 2
-                print("<coor>", i, new_path[i - 1].xy, new_path[i].xy, new_path[i + 1].xy)
+                # print("<coor>", i, new_path[i - 1].xy, new_path[i].xy, new_path[i + 1].xy)
         return new_path
 
     def traffic_ruler(
@@ -554,7 +558,6 @@ class sky():
         leaving start zone. Then it append the new drone/drones
         to self.line_sim
         """
-        # hub_list = self.refine_hub_list(hub_list)
         if tdron is not None:
             tdron.start = pygame.math.Vector2(*(hub_list[0].xy))
             tdron.target = pygame.math.Vector2(*(hub_list[1].xy))
@@ -581,13 +584,25 @@ class sky():
         pygame.font.init()
         if connections == [] or zone_list == []:
             return
+        for conn in connections:
+            print(conn)
+        
         screen = pygame.display.set_mode((self.width, self.height))
         self.sky_zone_set(zone_list)
+        zone_list = self.refine_zone_list(zone_list)
         screen_background = pygame.Surface((self.width, self.height))
         self.sky_draw_graph(
             zone_list, screen_background, connections, len(drone_list)
             )
+        
+        for zon in zone_list:
+            print("<><>", zon.name, zon.xy)
+
+        self.zone_connections(zone_list, connections)
         hub_list = self.path_finder(zone_list, connections, zone_list[0])
+        # for hub in hub_list:
+        #     print("<---->: ", hub.name, hub.priority, hub.link)
+
 
         self.drone_list = drone_list
         iter_drone = iter(self.drone_list)
@@ -612,12 +627,13 @@ class sky():
                         if curr_conn.traffic > curr_conn.max_link_capacity:
                             dron.zon_cur.traffic += 1
                             curr_conn.full = True
-                            if self.alternative_path_search(
-                                    dron, zone_list, connections, dron.zon_cur
-                                    ):
-                                dron.zon_cur.traffic -= 1
-                            else:
-                                dron.flyng = False
+                            if dron.zon_cur.name != "virtual_zon":
+                                if self.alternative_path_search(
+                                        dron, zone_list, connections, dron.zon_cur
+                                        ):
+                                    dron.zon_cur.traffic -= 1
+                                else:
+                                    dron.flyng = False
 
                 for dron in self.line_sim:
                     if dron.zon_nex is not None:
